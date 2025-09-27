@@ -33,9 +33,9 @@ public class PlayerController : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.E))
             {
-                Inventory.inventoryActivated = !Inventory.inventoryActivated;
+                LYJ.Inventory.inventoryActivated = !LYJ.Inventory.inventoryActivated;
 
-                if (Inventory.inventoryActivated)
+                if (LYJ.Inventory.inventoryActivated)
                     inventoryBase.SetActive(true);
                 else
                     inventoryBase.SetActive(false);

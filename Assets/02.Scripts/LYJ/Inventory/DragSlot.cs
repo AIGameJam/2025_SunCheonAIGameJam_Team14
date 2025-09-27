@@ -1,29 +1,32 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DragSlot : MonoBehaviour
+namespace LYJ
 {
-    public static DragSlot instance;
-    public Slot dragSlot;
-
-    private Image itemImage;
-
-    private void Start()
+    public class DragSlot : MonoBehaviour
     {
-        instance = this;
-        itemImage = GetComponent<Image>();
-    }
+        public static DragSlot instance;
+        public Slot dragSlot;
 
-    public void SetDragImage(Image _itemImage)
-    {
-        itemImage.sprite = _itemImage.sprite;
-        SetColor(1);
-    }
+        private Image itemImage;
 
-    public void SetColor(float _alpha)
-    {
-        Color color = itemImage.color;
-        color.a = _alpha;
-        itemImage.color = color;
+        private void Start()
+        {
+            instance = this;
+            itemImage = GetComponent<Image>();
+        }
+
+        public void SetDragImage(Image _itemImage)
+        {
+            itemImage.sprite = _itemImage.sprite;
+            SetColor(1);
+        }
+
+        public void SetColor(float _alpha)
+        {
+            Color color = itemImage.color;
+            color.a = _alpha;
+            itemImage.color = color;
+        }
     }
 }

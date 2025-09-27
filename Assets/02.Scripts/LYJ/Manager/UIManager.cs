@@ -62,10 +62,10 @@ namespace LJY
             interestText = canvas.transform.GetChild(0).GetChild(7).GetChild(1).GetComponentInChildren<Text>();
 
             restButton = canvas.transform.GetChild(0).GetChild(2).GetComponent<Button>();
-            restButton.onClick.AddListener(() => { GameManager.Instance.OnRest(); });
+            restButton.onClick.AddListener(() => { LYJ.GameManager.Instance.OnRest(); });
 
             tideButton = canvas.transform.GetChild(0).GetChild(1).GetComponent<Button>();
-            tideButton.onClick.AddListener(() => { GameManager.Instance.StartTideAction(); });
+            tideButton.onClick.AddListener(() => { LYJ.GameManager.Instance.StartTideAction(); });
             tideText = tideButton.GetComponentInChildren<Text>();
         }
 
@@ -97,17 +97,17 @@ namespace LJY
 
         public void SetMoneyText(int _money)
         {
-            moneyText.text = string.Format("{0:N0} 원", _money);
+            moneyText.text = string.Format("{0:N0} ??", _money);
         }
 
         public void SetDebuText(int _debu)
         {
-            DebuText.text = string.Format("{0:N0} 원", _debu);
+            DebuText.text = string.Format("{0:N0} ??", _debu);
         }
 
         public void SetInterestText(int _currentInterest, int _nextInterest)
         {
-            interestText.text = string.Format("{0:N0} 원 (+ {1:N0} 원)", _currentInterest, _nextInterest);
+            interestText.text = string.Format("{0:N0} ?? (+ {1:N0} ??)", _currentInterest, _nextInterest);
         }
 
         public void SetTideText(string _tide)
@@ -143,8 +143,8 @@ namespace LJY
             canvasGroup.gameObject.SetActive(true);
             canvasGroup.DOFade(1f, 1f);
 
-            SetHealthSlider(GameManager.Instance.health);
-            GameManager.Instance.OnTurn();
+            SetHealthSlider(LYJ.GameManager.Instance.health);
+            LYJ.GameManager.Instance.OnTurn();
         }
     }
 }
