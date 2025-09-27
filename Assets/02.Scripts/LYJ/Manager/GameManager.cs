@@ -2,7 +2,6 @@ using EnumTypes;
 using UnityEngine;
 using System.Collections;
 using UnityEngine.SceneManagement;
-using LJY;
 
 namespace LYJ
 {
@@ -17,7 +16,7 @@ namespace LYJ
 
         public DayType day = DayType.LowTide;
 
-        public int money = 0;
+        public int money = 100000;
         public int debt = 1000000;
         public int interest = 0;
         private const float interestRatio = 0.0001f;
@@ -39,6 +38,7 @@ namespace LYJ
             Application.targetFrameRate = 60;
 
             InterestHandler();
+            LYJ.UIManager.Instance.SetMoneyText(money);
         }
 
         private void OnEnable()
@@ -80,25 +80,30 @@ namespace LYJ
                 day = DayType.LowTide;
                 UIManager.Instance.SetTideText("∂•∆ƒ∑Ø∞°±‚");
 
-                if (interestDDay != 0)
+                if (interestDDay > 0)
                 {
                     interestDDay--;
                     InterestHandler();
                 }
-                else
+                else if(interestDDay <= 0)
                 {
-                    if (money < interest)
+                    if (money - interest < 0)
                     {
                         if (waringCount >= 1)
                             GameOver();
                         else
+                        {
                             waringCount++;
+                            interestDDay = 13;
+                        }
                     }
                     else
                     {
+                        Debug.Log(":: ¿Ã¿⁄ ∞±¿Ω ::");
                         money -= interest;
                         interest = 0;
-                        UIManager.Instance.SetMoneyText(money);
+                        interestDDay = 13;
+                        LYJ.UIManager.Instance.SetMoneyText(money);
                     }
                 }
             }
@@ -153,6 +158,7 @@ namespace LYJ
             if(_scene.name == "LobbyScene")
             {
                 UIManager.Instance.Init();
+                LYJ.UIManager.Instance.SetMoneyText(money);
                 UIManager.Instance.SetInterestText(interest, Mathf.RoundToInt(debt * interestRatio));
                 OnTurn();
             }

@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 namespace LYJ
 {
-    public class Slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
+    public class Slot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
     {
         private Rect baseRect;
         private Inventory inventory;
@@ -17,13 +17,10 @@ namespace LYJ
         private GameObject countObject;
         private Text countText;
 
-        private PlayerController playerController;
-
         private void Start()
         {
             baseRect = transform.parent.parent.GetComponent<RectTransform>().rect;
             inventory = transform.parent.parent.parent.GetComponent<Inventory>();
-            playerController = GameObject.Find("Player").GetComponent<PlayerController>();
         }
 
         public void Init()
@@ -33,7 +30,6 @@ namespace LYJ
             countText = countObject.GetComponentInChildren<Text>(true);
         }
 
-        // ?????? ?????? ?????? ????
         public void SetColor(float _alpha)
         {
             Color color = itemImage.color;
@@ -41,7 +37,6 @@ namespace LYJ
             itemImage.color = color;
         }
 
-        // ?????????? ?????? ?????? ???? ????
         public void AddItem(ItemScriptableObject _item, int _count = 1)
         {
             item = _item;
@@ -62,17 +57,19 @@ namespace LYJ
             SetColor(1);
         }
 
-        //  ???? ?????? ?????? ???? ????????
         public void SetSlotCount(int _count)
         {
-            itemCount += _count;
+            if(itemCount + _count >= 20)
+                itemCount = 20;
+            else
+                itemCount += _count;
+
             countText.text = itemCount.ToString();
 
             if (itemCount <= 0)
                 ClearSlot();
         }
 
-        // ???? ???? ???? ????
         public void ClearSlot()
         {
             item = null;
@@ -84,7 +81,6 @@ namespace LYJ
             countObject.SetActive(false);
         }
 
-        // ???? ???? ???? ????
         private void ChangeSlot()
         {
             ItemScriptableObject tempItem = item;
@@ -98,16 +94,6 @@ namespace LYJ
                 DragSlot.instance.dragSlot.ClearSlot();
         }
 
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            if (eventData.clickCount == 2 && item.ItemName == "??????")
-            {
-                inventory.UseItem(item.ItemID, 1);
-                playerController.currentDisplay.OnSetActive();
-            }
-        }
-
-        // ?????? ???????? ???????? ?? ????
         public void OnBeginDrag(PointerEventData eventData)
         {
             if (item != null)
@@ -118,14 +104,12 @@ namespace LYJ
             }
         }
 
-        // ?????? ?????? ???? ???? ???? ???? 
         public void OnDrag(PointerEventData eventData)
         {
             if (item != null)
                 DragSlot.instance.transform.position = eventData.position;
         }
 
-        // ?????? ?????? ???? ???? ?????? ?? ????
         public void OnEndDrag(PointerEventData eventData)
         {
             if (DragSlot.instance.transform.localPosition.x < baseRect.xMin
