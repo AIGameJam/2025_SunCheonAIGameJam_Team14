@@ -59,6 +59,7 @@ namespace LJY
             interestDDayText = canvas.transform.GetChild(0).GetChild(0).GetChild(1).GetComponent<Text>();
             moneyText = canvas.transform.GetChild(0).GetChild(6).GetChild(0).GetComponent<Text>();
             DebuText = canvas.transform.GetChild(0).GetChild(7).GetChild(0).GetComponent<Text>();
+            interestText = canvas.transform.GetChild(0).GetChild(7).GetChild(1).GetComponentInChildren<Text>();
 
             restButton = canvas.transform.GetChild(0).GetChild(2).GetComponent<Button>();
             restButton.onClick.AddListener(() => { GameManager.Instance.OnRest(); });
@@ -96,12 +97,17 @@ namespace LJY
 
         public void SetMoneyText(int _money)
         {
-            moneyText.text = string.Format("{0:N0}", _money);
+            moneyText.text = string.Format("{0:N0} 원", _money);
         }
 
         public void SetDebuText(int _debu)
         {
-            DebuText.text = string.Format("{0:N0}", _debu);
+            DebuText.text = string.Format("{0:N0} 원", _debu);
+        }
+
+        public void SetInterestText(int _currentInterest, int _nextInterest)
+        {
+            interestText.text = string.Format("{0:N0} 원 (+ {1:N0} 원)", _currentInterest, _nextInterest);
         }
 
         public void SetTideText(string _tide)

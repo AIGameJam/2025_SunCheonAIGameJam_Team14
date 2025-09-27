@@ -2,10 +2,10 @@ using UnityEngine;
 
 namespace LJY
 {
-    public class LobbyManager : MonoBehaviour
+    public class DebtManager : MonoBehaviour
     {
-        private static LobbyManager instance;
-        public static LobbyManager Instance { get { return instance; } }
+        private static DebtManager instance;
+        public static DebtManager Instance { get { return instance; } }
 
         private void Awake()
         {

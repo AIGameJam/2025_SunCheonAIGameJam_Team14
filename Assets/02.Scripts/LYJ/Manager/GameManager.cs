@@ -20,6 +20,7 @@ namespace LYJ
         public int money = 0;
         public int debt = 1000000;
         public int interest = 0;
+        private const float interestRatio = 0.0001f;
         public int health = 100;
 
         private bool isGameOver = false;
@@ -36,6 +37,8 @@ namespace LYJ
             instance = this;
             DontDestroyOnLoad(gameObject);
             Application.targetFrameRate = 60;
+
+            InterestHandler();
         }
 
         private void OnEnable()
@@ -51,7 +54,8 @@ namespace LYJ
         // 이자 관리
         public  void InterestHandler()
         {
-
+            interest += Mathf.RoundToInt(debt * interestRatio);
+            UIManager.Instance.SetInterestText(interest, Mathf.RoundToInt(debt * interestRatio));
         }
 
         // 간조, 만조 이벤트 시작
@@ -149,6 +153,7 @@ namespace LYJ
             if(_scene.name == "LobbyScene")
             {
                 UIManager.Instance.Init();
+                UIManager.Instance.SetInterestText(interest, Mathf.RoundToInt(debt * interestRatio));
                 OnTurn();
             }
             else if (_scene.name == "LowTideScene")
