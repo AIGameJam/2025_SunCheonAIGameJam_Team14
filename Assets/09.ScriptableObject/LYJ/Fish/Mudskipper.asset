@@ -15,6 +15,6 @@ MonoBehaviour:
   ItemID: 1
   ItemType: 2
   ItemRank: 0
-  ItemImage: {fileID: 21300000, guid: 04cd66c93803c2a4686790157c16ed61, type: 3}
+  ItemImage: {fileID: 21300000, guid: 0844d1d1ebfe9c643847237517b635ee, type: 3}
   ItemName: "\uB9D0\uB69D\uB9DD\uB465\uC5B4"
   ItemCost: 120

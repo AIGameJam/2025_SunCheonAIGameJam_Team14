@@ -16,4 +16,10 @@ namespace EnumTypes
         Red,
         Gold
     }
+
+    public enum DayType
+    {
+        LowTide,
+        HighTide
+    }
 }

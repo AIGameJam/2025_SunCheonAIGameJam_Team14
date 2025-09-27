@@ -15,6 +15,6 @@ MonoBehaviour:
   ItemID: 3
   ItemType: 2
   ItemRank: 0
-  ItemImage: {fileID: 21300000, guid: 04cd66c93803c2a4686790157c16ed61, type: 3}
+  ItemImage: {fileID: 21300000, guid: 7a281cc2343123a4dbd82f568f4489de, type: 3}
   ItemName: "\uBC15\uB300"
   ItemCost: 340
