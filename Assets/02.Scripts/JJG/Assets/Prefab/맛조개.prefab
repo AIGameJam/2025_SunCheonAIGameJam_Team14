@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8908398574170372335}
   - component: {fileID: 852244424005332175}
   - component: {fileID: 5282975278138193832}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: "\uB9DB\uC870\uAC1C"
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -79,10 +79,10 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 1270586045
+  m_SortingLayerID: 2008287089
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Sprite: {fileID: 8256241948175758892, guid: 7571c59a5fe9b0f2b93a49c5f3b6cd09, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -171,7 +171,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 3.02, y: 2.62}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0

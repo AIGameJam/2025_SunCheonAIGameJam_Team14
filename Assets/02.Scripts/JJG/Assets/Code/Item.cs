@@ -1,32 +1,34 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class Item
+namespace JJG
 {
-    public enum ItemType
-	{
-			
-        칠게,
+    public class Item
+    {
+        public enum ItemType
+        {
 
-        농게,
+            칠게,
 
-        갯게,
+            농게,
 
-        붉은발말똥게,
+            갯게,
 
-        홍합,
+            붉은발말똥게,
 
-        갯고둥,
+            홍합,
 
-        총알고둥,
+            갯고둥,
 
-        맛조개,
+            총알고둥,
 
-        개조개,
+            맛조개,
 
-        갯지렁이,
-	}
-	public ItemType itemType;
-	public int amount;
+            개조개,
+
+            갯지렁이,
+        }
+        public ItemType itemType;
+        public int amount;
+    }
 }

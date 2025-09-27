@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+namespace JJG{
 public class UI_Inventory : MonoBehaviour
 {
 	private Inventory inventory;
@@ -10,4 +10,4 @@ public class UI_Inventory : MonoBehaviour
 	{
 		this.inventory = inventory;
 	}
-}
+}}
