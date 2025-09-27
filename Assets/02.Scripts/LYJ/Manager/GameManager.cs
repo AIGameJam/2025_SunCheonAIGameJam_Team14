@@ -159,6 +159,7 @@ namespace LYJ
             {
                 UIManager.Instance.Init();
                 LYJ.UIManager.Instance.SetMoneyText(money);
+                LYJ.UIManager.Instance.SetDebuText(debt);
                 UIManager.Instance.SetInterestText(interest, Mathf.RoundToInt(debt * interestRatio));
                 OnTurn();
             }
