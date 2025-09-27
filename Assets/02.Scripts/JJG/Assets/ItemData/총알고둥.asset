@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: "\uCD1D\uC54C\uACE0\uB465"
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: "\uCD1D\uC54C\uACE0\uB465"
-  icon: {fileID: 0}
+  icon: {fileID: -997929265606311825, guid: e62b01592142dd64dad660d6cd76e72c, type: 3}

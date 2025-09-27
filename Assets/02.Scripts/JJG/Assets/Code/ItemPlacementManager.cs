@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
-
+namespace JJG{
 public class SpecialTileData
 {
     public Vector3Int position;
@@ -14,7 +14,7 @@ public class ItemPlacementManager : MonoBehaviour
     [Header("연결 필수")]
     public Tilemap targetTilemap;
     // --- 변수 이름만 직관적으로 변경 ---
-    public GameObject hintLightPrefab; 
+    public GameObject hintLightPrefab;
     public List<GameObject> itemPrefabs;
 
     [Header("설정")]
@@ -22,7 +22,7 @@ public class ItemPlacementManager : MonoBehaviour
     public float itemPlacementChance = 0.1f;
 
     private Dictionary<Vector3Int, SpecialTileData> specialTilesDict;
-    private Dictionary<Vector3Int, GameObject> hintObjects; 
+    private Dictionary<Vector3Int, GameObject> hintObjects;
 
     void Start()
     {
@@ -42,7 +42,7 @@ public class ItemPlacementManager : MonoBehaviour
                     Vector3 worldPos = targetTilemap.GetCellCenterWorld(cellPosition);
                     Instantiate(prefabToDrop, worldPos, Quaternion.identity);
                 }
-                
+
                 data.isLooted = true;
                 specialTilesDict[cellPosition] = data;
 
@@ -58,7 +58,7 @@ public class ItemPlacementManager : MonoBehaviour
     private void PlaceItemsInTiles()
     {
         specialTilesDict = new Dictionary<Vector3Int, SpecialTileData>();
-        hintObjects = new Dictionary<Vector3Int, GameObject>(); 
+        hintObjects = new Dictionary<Vector3Int, GameObject>();
 
         BoundsInt bounds = targetTilemap.cellBounds;
 
@@ -77,7 +77,7 @@ public class ItemPlacementManager : MonoBehaviour
                         itemPrefabIndex = randomIndex,
                         isLooted = false
                     };
-                    
+
                     specialTilesDict.Add(cellPos, newData);
 
                     // --- 힌트 빛 프리팹을 생성 ---
@@ -89,4 +89,5 @@ public class ItemPlacementManager : MonoBehaviour
         }
         Debug.Log(specialTilesDict.Count + "개의 특별한 타일 배치 완료.");
     }
+}
 }
