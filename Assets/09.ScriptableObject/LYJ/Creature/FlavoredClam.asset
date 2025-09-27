@@ -15,6 +15,13 @@ MonoBehaviour:
   ItemID: 8
   ItemType: 2
   ItemRank: 0
-  ItemImage: {fileID: 21300000, guid: 04cd66c93803c2a4686790157c16ed61, type: 3}
+  ItemImage: {fileID: 21300000, guid: 2f80ea05c9f0b9943beed26e9ae467e9, type: 3}
   ItemName: "\uB9DB\uC870\uAC1C"
+  ItemHabitat: "\uAC2F\uBC8C\uC758 \uBAA8\uB798\uC9C0\uB300\uC5D0 \uC0B4\uBA74\uC11C
+    \uD0C0\uC6D0\uD615\uC758 \uAD6C\uBA4D\uC744 \uD31C"
+  ItemDescription: "\uAF2C\uCC59\uC774 \uB4F1\uC73C\uB85C \uAD6C\uBA4D\uC5D0 \uC790\uADF9\uC744
+    \uC8FC\uBA74 \uC704\uB85C \uC19F\uC544\uC62C\uB77C \uC7A1\uB294 \uB3C5\uD2B9\uD55C
+    \uCC44\uC9D1 \uBC29\uBC95\uC774 \uD2B9\uC9D5\uC774\uBA70, \uD2B9\uC720\uC758
+    \uAC10\uCE60\uB9DB\uC73C\uB85C \uC2DD\uC6A9\uC73C\uB85C\uB3C4 \uC778\uAE30\uAC00
+    \uB192\uC2B5\uB2C8\uB2E4. "
   ItemCost: 1200

@@ -9,5 +9,7 @@ public class ItemScriptableObject : ScriptableObject
     public ItemRank ItemRank;
     public Sprite ItemImage;
     public string ItemName;
+    public string ItemHabitat;
+    public string ItemDescription;
     public int ItemCost;
 }

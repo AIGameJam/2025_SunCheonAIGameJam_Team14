@@ -6,7 +6,6 @@ namespace LYJ
     public class Inventory : MonoBehaviour
     {
         public static bool inventoryActivated = false;
-        public ItemScriptableObject diplays;
 
         private GameObject inventoryBase;
         private GameObject slotParent;
@@ -21,8 +20,6 @@ namespace LYJ
 
             for (int i = 0; i < slots.Length; i++)
                 slots[i].Init();
-
-            AcquireItem(diplays, 4);
         }
 
         private void Update()
@@ -43,10 +40,8 @@ namespace LYJ
             }
         }
 
-        // ?????? ????
         public void AcquireItem(ItemScriptableObject _item, int _count = 1)
         {
-            // ???? ?????? ???????? ?????? ???? ????????
             if (_item.ItemType != ItemType.Equipment)
             {
                 for (int i = 0; i < slots.Length; i++)
@@ -59,7 +54,6 @@ namespace LYJ
                 }
             }
 
-            // ???? ?????? ???????? ?????? ?????? ?????? ???? ????
             for (int i = 0; i < slots.Length; i++)
             {
                 if (slots[i].item == null)
@@ -70,7 +64,6 @@ namespace LYJ
             }
         }
 
-        // ?????? ????
         public void UseItem(int _itemID, int _count)
         {
             for (int i = 0; i < slots.Length; i++)
@@ -83,7 +76,6 @@ namespace LYJ
             }
         }
 
-        // ???? ?????? ???? ????
         public int ChechQuantityItem(int _item)
         {
             int _num = 0;
@@ -99,5 +91,4 @@ namespace LYJ
             return _num;
         }
     }
-
 }
