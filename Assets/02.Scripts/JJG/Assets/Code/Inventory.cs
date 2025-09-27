@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
-
+namespace JJG{
 public class Inventory : MonoBehaviour
 {
     // --- ★★★ 이 부분이 싱글톤의 핵심입니다 ★★★ ---
 
     // 'instance'라는 이름의 대표 주소를 만듭니다. static으로 선언되어 게임 전체에서 공유됩니다.
     public static Inventory instance;
-    public Dictionary<ItemData, int> items = new Dictionary<ItemData, int>();    
+    public Dictionary<ItemData, int> items = new Dictionary<ItemData, int>();
 
     public delegate void OnItemChanged();
     public OnItemChanged onItemChangedCallback;
@@ -46,11 +46,12 @@ public class Inventory : MonoBehaviour
         }
 
         Debug.Log(item.itemName + "을(를) 획득했습니다! 현재 " + items[item] + "개 보유 중.");
-        
+
         // 아이템에 변화가 생겼다고 알림
         if (onItemChangedCallback != null)
         {
             onItemChangedCallback.Invoke();
         }
     }
+}
 }

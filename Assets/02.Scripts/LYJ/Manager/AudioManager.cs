@@ -1,4 +1,3 @@
-using LJY;
 using UnityEngine;
 
 public class AudioManager : MonoBehaviour

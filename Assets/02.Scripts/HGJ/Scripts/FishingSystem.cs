@@ -6,13 +6,14 @@ using System.Linq;
 
 public enum FishingPhase
 {
-    IDLE,               // 평상시
-    FISHING_READY,      // 준비 상태
-    FISHING_ACTIVE      // 낚시 진행 중
+    IDLE,               // 평상시: 이동 가능, 낚시 준비 대기
+    FISHING_READY,      // 준비 상태: 낚싯대 준비 동작 (우클릭 -> FISHING_ACTIVE)
+    FISHING_ACTIVE      // 낚시 진행 중: 찌 던짐, 챔질 대기 (우클릭 -> 챔질/READY 복귀)
 }
 
 public class FishingSystem : MonoBehaviour
 {
+    // 필요한 시스템 참조 (Inspector에서 할당)
     public TimeManager timeManager;
     public PlayerStats playerStats;
     public PointManager pointManager;
@@ -20,64 +21,45 @@ public class FishingSystem : MonoBehaviour
 
     public FishingPhase currentPhase { get; private set; } = FishingPhase.IDLE;
 
-    // ✅ 낚시 후 Indicator를 표시할 수 있는 시간(초)
-    public bool indicatorAvailable = false;
-    public float indicatorTimer = 0f;
-
     public void SetPhase(FishingPhase newPhase)
     {
         currentPhase = newPhase;
     }
 
+    // 낚시 상수
     private const int ROD_TIME_COST = 30;
     private const int ROD_STAMINA_COST = 5;
 
-    void Update()
-    {
-        // Indicator가 켜져 있으면 2초 카운트
-        if (indicatorAvailable && indicatorTimer > 0f)
-        {
-            indicatorTimer -= Time.deltaTime;
-            if (indicatorTimer <= 0f)
-            {
-                indicatorAvailable = false; // 자동 종료
-                if (fishingController != null)
-                    fishingController.UpdateIndicatorForce(); // 즉시 반영
-            }
-        }
-    }
-
-    // === 준비 단계(IDLE -> READY) ===
+    // === 1. 낚시 준비 단계 진입 (IDLE -> FISHING_READY) ===
     public void StartFishingReady()
     {
         if (currentPhase != FishingPhase.IDLE) return;
 
         currentPhase = FishingPhase.FISHING_READY;
-        indicatorAvailable = false;
-        indicatorTimer = 0f;
 
         if (fishingController != null)
             fishingController.currentState = FishingController.State.FishingReady;
 
-        Debug.Log("✅ READY 상태 진입 (Indicator 꺼짐)");
+        Debug.Log("✅ [FS] StartFishingReady 함수 호출 성공! 상태 READY로 전환 완료.");
     }
 
-    // === READY -> ACTIVE ===
+    // === 2. 낚시 실행 로직 (FISHING_READY -> FISHING_ACTIVE) ===
     public void StartFishingAttempt()
     {
         if (currentPhase != FishingPhase.FISHING_READY)
         {
-            Debug.LogWarning($"⚠️ 낚시 시작 실패: 현재 페이즈 {currentPhase}");
+            Debug.LogWarning($"⚠️ 낚시 시작 실패: 현재 페이즈가 FISHING_READY가 아닌 {currentPhase}입니다.");
             return;
         }
 
         if (playerStats == null || !playerStats.CanAffordStamina(ROD_STAMINA_COST))
         {
-            Debug.LogWarning($"⚠️ 낚시 시작 실패: 체력 부족");
+            Debug.LogWarning($"⚠️ 낚시 시작 실패: 체력({(playerStats != null ? playerStats.currentHealth.ToString() : "N/A")})이 부족합니다.");
             return;
         }
 
-        if (timeManager != null) timeManager.SpendTime(ROD_TIME_COST);
+        // --- 모든 체크를 통과하면 낚시 실행 ---
+        timeManager.SpendTime(ROD_TIME_COST);
         playerStats.ConsumeStamina(ROD_STAMINA_COST);
 
         currentPhase = FishingPhase.FISHING_ACTIVE;
@@ -85,10 +67,11 @@ public class FishingSystem : MonoBehaviour
         if (fishingController != null)
             fishingController.currentState = FishingController.State.FishingStart;
 
-        Debug.Log("✅ 낚시 실행! ACTIVE 상태");
+        Debug.Log("✅ 낚시 실행! FishingPhase: FISHING_ACTIVE. (찌 던짐)");
 
         float timeUntilSignal = UnityEngine.Random.Range(0.5f, 5.0f);
         StartCoroutine(WaitForSignal(timeUntilSignal));
+        Debug.Log("신호 대기 중...");
     }
 
     private IEnumerator WaitForSignal(float waitTime)
@@ -96,12 +79,14 @@ public class FishingSystem : MonoBehaviour
         yield return new WaitForSeconds(waitTime);
 
         bool isSignalTime = true;
-        Debug.Log("🔴 신호 감지!");
+        Debug.Log("🔴 신호 감지! 우클릭/Fish 액션 사용!");
 
         yield return new WaitForSeconds(1.0f);
 
         if (currentPhase == FishingPhase.FISHING_ACTIVE && isSignalTime)
+        {
             FailFishing("신호 시간 초과");
+        }
     }
 
     public void ConfirmCatch()
@@ -112,49 +97,55 @@ public class FishingSystem : MonoBehaviour
 
     private void SuccessFishing()
     {
+        // 1. 현재 블럭의 단계 레벨을 가져옵니다. 
         int currentDepth = (fishingController != null) ? fishingController.CurrentDepthLevel : 1;
+
+        // 2. PointManager에게 해당 레벨의 획득물 목록을 요청합니다.
         GameObject[] creatures = (pointManager != null) ? pointManager.GetCreaturesByDepth(currentDepth) : new GameObject[0];
+        Debug.Log(creatures.Length);
+
+        // 🚨 3. [핵심] Null 요소를 필터링하여 유효한 프리팹만 남깁니다. 🚨
         GameObject[] validCreatures = creatures.Where(c => c != null).ToArray();
 
         if (validCreatures.Length > 0)
         {
+            // 4. 유효한 목록에서만 생물을 무작위로 선택
             int randomIndex = Random.Range(0, validCreatures.Length);
             GameObject caughtCreature = validCreatures[randomIndex];
-            if (playerStats != null)
-                playerStats.DisplayCaughtCreature(caughtCreature);
-            Debug.Log($"🎉 낚시 성공! 레벨 {currentDepth}, 생물: {caughtCreature.name}");
+
+            // 5. PlayerStats에게 화면에 표시하도록 명령
+            playerStats.DisplayCaughtCreature(caughtCreature);
+            Debug.Log($"🎉 낚시 성공! 획득 지점: {currentDepth}단계. 획득 생물: {caughtCreature.name}");
         }
+
         else
         {
-            Debug.LogWarning($"⚠️ 낚시 성공! 하지만 레벨 {currentDepth}에는 생물이 없음");
+            // 이 경고가 나온다면 Inspector의 획득물 슬롯이 비어있다는 뜻입니다.
+            Debug.LogWarning($"⚠️ 낚시 성공! 하지만 {currentDepth}단계에서 획득 가능한 생물이 설정되지 않았습니다. 빈 손!");
         }
 
+        // --- 상태 복구 ---
         currentPhase = FishingPhase.FISHING_READY;
-        indicatorAvailable = true;
-        indicatorTimer = 2f; // ✅ 2초 동안만 표시
         if (fishingController != null)
             fishingController.currentState = FishingController.State.FishingReady;
-
         StopAllCoroutines();
-        Debug.Log("🎉 READY 복귀 (Indicator 2초 표시)");
+        Debug.Log("🎉 낚시 성공! 다시 찌를 던질 수 있습니다.");
     }
 
     private void FailFishing(string reason)
     {
         currentPhase = FishingPhase.FISHING_READY;
-        indicatorAvailable = true;
-        indicatorTimer = 2f; // ✅ 2초 동안만 표시
         if (fishingController != null)
             fishingController.currentState = FishingController.State.FishingReady;
-
         StopAllCoroutines();
-        Debug.Log($"😭 낚시 실패! ({reason}) — Indicator 2초 표시");
+        Debug.Log($"😭 낚시 실패! ({reason})");
     }
 
+    // 기타 로직 유지
     public void UseTrapOrNet(int timeCost, string itemType)
     {
         if (currentPhase != FishingPhase.IDLE && currentPhase != FishingPhase.FISHING_READY) return;
-        if (timeManager != null) timeManager.SpendTime(timeCost);
+        timeManager.SpendTime(timeCost);
         Debug.Log($"[System] {itemType} 사용. {timeCost}분 소모.");
     }
 }
