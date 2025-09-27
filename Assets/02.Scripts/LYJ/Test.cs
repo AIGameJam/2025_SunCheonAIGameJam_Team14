@@ -2,15 +2,11 @@ using UnityEngine;
 
 public class Test : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    public LYJ.Inventory inventory;
+    public ItemScriptableObject[] items;
 
-    // Update is called once per frame
-    void Update()
+    public void GetTest()
     {
-        
+        inventory.AcquireItem(items[Random.Range(0, items.Length)]);
     }
 }
