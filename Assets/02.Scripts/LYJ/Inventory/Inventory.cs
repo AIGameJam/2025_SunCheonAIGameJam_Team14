@@ -4,6 +4,7 @@ using UnityEngine;
 public class Inventory : MonoBehaviour
 {
     public static bool inventoryActivated = false;
+    public ItemScriptableObject diplays;
 
     private GameObject inventoryBase;
     private GameObject slotParent;
@@ -18,6 +19,8 @@ public class Inventory : MonoBehaviour
 
         for (int i = 0; i < slots.Length; i++)
             slots[i].Init();
+
+        AcquireItem(diplays, 4);
     }
 
     private void Update()

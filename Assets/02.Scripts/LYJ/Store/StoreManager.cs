@@ -2,15 +2,39 @@ using UnityEngine;
 
 public class StoreManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private float openTime = 30.0f;
+    private float currentTime = 0;
+
+    public bool isOpen = false;
+
+    private void Start()
     {
         
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        
+        if (isOpen)
+        {
+            OpenStore();
+        }
+    }
+
+    public void IsOpen()
+    {
+        isOpen = true;
+    }
+
+    public void OpenStore()
+    {
+        if(currentTime < openTime)
+        {
+            currentTime += Time.deltaTime;
+        }
+        else
+        {
+            currentTime = 0;
+            isOpen = false;
+        }
     }
 }

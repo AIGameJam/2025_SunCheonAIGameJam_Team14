@@ -5,7 +5,8 @@ namespace EnumTypes
         Equipment,
         Fish,
         Creature,
-        Plant
+        Plant,
+        Object
     }
 
     public enum ItemRank

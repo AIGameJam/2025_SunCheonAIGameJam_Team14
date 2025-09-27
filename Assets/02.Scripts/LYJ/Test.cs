@@ -3,10 +3,10 @@ using UnityEngine;
 public class Test : MonoBehaviour
 {
     public Inventory inventory;
-    public ItemScriptableObject item;
+    public ItemScriptableObject[] items;
 
     public void GetTest()
     {
-        inventory.AcquireItem(item);
+        inventory.AcquireItem(items[Random.Range(0, items.Length)]);
     }
 }

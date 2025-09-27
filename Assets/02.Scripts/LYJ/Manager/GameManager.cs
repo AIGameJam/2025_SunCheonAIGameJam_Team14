@@ -1,21 +1,27 @@
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+namespace LYJ
 {
-    private static GameManager instance;
-    public static GameManager Instance {  get { return instance; } }
-
-    private void Awake()
+    public class GameManager : MonoBehaviour
     {
-        if(instance != null)
-        {
-            Destroy(instance);
-        }
-        else
-        {
-            instance = this;
-        }
+        private static GameManager instance;
+        public static GameManager Instance { get { return instance; } }
 
-        Application.targetFrameRate = 60;
+        public int money = 0;
+        public int health = 100;
+
+        private void Awake()
+        {
+            if (instance != null)
+            {
+                Destroy(instance);
+            }
+            else
+            {
+                instance = this;
+            }
+
+            Application.targetFrameRate = 60;
+        }
     }
 }

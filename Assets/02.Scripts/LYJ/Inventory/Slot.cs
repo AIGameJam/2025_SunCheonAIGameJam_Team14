@@ -2,15 +2,28 @@ using EnumTypes;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using Unity.VisualScripting;
 
 public class Slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
+    private Rect baseRect;
+    private Inventory inventory;
+
     public ItemScriptableObject item;
     public int itemCount;
     public Image itemImage;
 
     private GameObject countObject;
     private Text countText;
+
+    private PlayerController playerController;
+
+    private void Start()
+    {
+        baseRect = transform.parent.parent.GetComponent<RectTransform>().rect;
+        inventory = transform.parent.parent.parent.GetComponent<Inventory>();
+        playerController = GameObject.Find("Player").GetComponent<PlayerController>();
+    }
 
     public void Init()
     {
@@ -86,12 +99,10 @@ public class Slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDra
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (eventData.button == PointerEventData.InputButton.Right)
+        if(eventData.clickCount == 2 && item.ItemName == "진열대")
         {
-            if (item != null)
-            {
-
-            }
+            inventory.UseItem(item.ItemID, 1);
+            playerController.currentDisplay.OnSetActive();
         }
     }
 
@@ -116,6 +127,22 @@ public class Slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDra
     // 마우스 드래그 하는 것이 끝냈을 때 호출
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (DragSlot.instance.transform.localPosition.x < baseRect.xMin
+    || DragSlot.instance.transform.localPosition.x > baseRect.xMax
+    || DragSlot.instance.transform.localPosition.y < baseRect.yMin
+    || DragSlot.instance.transform.localPosition.y > baseRect.yMax)
+        {
+            GameObject _dropped = eventData.pointerCurrentRaycast.gameObject;
+
+            if (_dropped != null && _dropped.CompareTag("Display"))
+            {
+                DisplayController _disply = _dropped.GetComponent<DisplayController>();
+                _disply.item = DragSlot.instance.dragSlot.item;
+                _disply.OnDisplay();
+                DragSlot.instance.dragSlot.ClearSlot();
+            }
+        }
+
         DragSlot.instance.SetColor(0);
         DragSlot.instance.dragSlot = null;
     }
