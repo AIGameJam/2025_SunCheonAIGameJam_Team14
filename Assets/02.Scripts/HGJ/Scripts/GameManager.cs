@@ -1,113 +1,117 @@
-// GameManager.cs
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using TMPro;
 
-public class GameManager : MonoBehaviour
+namespace HGJ
 {
-    // === Input System 필드 ===
-    private PlayerControls playerControls;
-
-    // 모든 시스템 매니저를 참조 (Inspector에서 할당)
-    public TimeManager timeManager;
-    public PointManager pointManager;
-    public FishingSystem fishingSystem;
-    public FishingController fishingController;
-    public PlayerStats playerStats;
-
-    [Header("UI 표시")]
-    public TextMeshProUGUI phaseDisplayUI;
-    // 🚨 [핵심] Time Display UI 필드 🚨
-    public TextMeshProUGUI timeDisplayUI;
-
-    void Awake()
+    public class GameManager : MonoBehaviour
     {
-        playerControls = new PlayerControls();
-        playerControls.Player.Fish.performed += OnFishPerformed;
-    }
+        // === Input System 필드 ===
+        private PlayerControls playerControls;
 
-    void OnEnable()
-    {
-        if (playerControls != null)
-            playerControls.Player.Enable();
-    }
+        // 모든 시스템 매니저를 참조 (Inspector에서 할당)
+        public TimeManager timeManager;
+        public PointManager pointManager;
+        public FishingSystem fishingSystem;
+        public FishingController fishingController;
+        public PlayerStats playerStats;
 
-    void OnDisable()
-    {
-        if (playerControls != null)
-            playerControls.Player.Disable();
-    }
+        [Header("UI 표시")]
+        public TextMeshProUGUI phaseDisplayUI;
+        // 🚨 [핵심] Time Display UI 필드 🚨
+        public TextMeshProUGUI timeDisplayUI;
 
-    private void OnFishPerformed(InputAction.CallbackContext context)
-    {
-        if (!context.performed || fishingSystem == null) return;
-
-        FishingPhase currentPhase = fishingSystem.currentPhase;
-
-        if (currentPhase == FishingPhase.IDLE)
+        void Awake()
         {
-            Debug.Log("📢 [GM] Input Success! Requesting StartFishingReady.");
-            fishingSystem.StartFishingReady();
-        }
-        else if (currentPhase == FishingPhase.FISHING_READY)
-        {
-            Debug.Log("[GM/Input] 🎣 낚시 준비 완료 상태에서 입력 감지: 찌 던지기 시도.");
-            fishingSystem.StartFishingAttempt();
-        }
-        else if (currentPhase == FishingPhase.FISHING_ACTIVE)
-        {
-            Debug.Log("[GM/Input] 🎣 낚시 진행 중 입력 감지: 챔질 시도.");
-            fishingSystem.ConfirmCatch();
-        }
-    }
-
-    void Start()
-    {
-        if (timeManager != null)
-        {
-            timeManager.OnTurnEnd += HandleTurnEnd;
-            timeManager.SetTimeFlow(true); // 시간 자동 흐름 기능은 현재 비활성화
+            playerControls = new PlayerControls();
+            playerControls.Player.Fish.performed += OnFishPerformed;
         }
 
-        if (playerStats != null)
+        void OnEnable()
         {
-            playerStats.InitializeHealth();
+            if (playerControls != null)
+                playerControls.Player.Enable();
         }
 
-        if (fishingSystem != null)
-            Debug.Log($"[GM/START] 시스템 시작 완료. 현재 단계: {fishingSystem.currentPhase.ToString()}");
-    }
-
-    void Update()
-    {
-        // 🚨 [추가된 로직] 매 프레임 시간 UI 업데이트 🚨
-        if (timeManager != null && timeDisplayUI != null)
+        void OnDisable()
         {
-            int totalMinutes = timeManager.timeLeftInMinutes;
-            int hours = totalMinutes / 60;
-            int minutes = totalMinutes % 60;
-
-            // "H시간 M분" 형식으로 UI 텍스트 업데이트
-            timeDisplayUI.text = $"Time: {hours}H {minutes:D2}Min";
+            if (playerControls != null)
+                playerControls.Player.Disable();
         }
 
-        if (fishingSystem == null) return;
-        HandleInput();
-    }
+        private void OnFishPerformed(InputAction.CallbackContext context)
+        {
+            if (!context.performed || fishingSystem == null) return;
 
-    void HandleInput()
-    {
-        // 현재 시스템은 자유 이동만 허용합니다.
-    }
+            FishingPhase currentPhase = fishingSystem.currentPhase;
 
-    private void HandleTurnEnd()
-    {
-        Debug.Log("[GM] 만조 턴이 종료되었습니다.");
-        timeManager.StartNewTurn();
+            if (currentPhase == FishingPhase.IDLE)
+            {
+                Debug.Log("📢 [GM] Input Success! Requesting StartFishingReady.");
+                fishingSystem.StartFishingReady();
+            }
+            else if (currentPhase == FishingPhase.FISHING_READY)
+            {
+                Debug.Log("[GM/Input] 🎣 낚시 준비 완료 상태에서 입력 감지: 찌 던지기 시도.");
+                fishingSystem.StartFishingAttempt();
+            }
+            else if (currentPhase == FishingPhase.FISHING_ACTIVE)
+            {
+                Debug.Log("[GM/Input] 🎣 낚시 진행 중 입력 감지: 챔질 시도.");
+                fishingSystem.ConfirmCatch();
+            }
+        }
 
-        fishingSystem.SetPhase(FishingPhase.IDLE);
+        void Start()
+        {
+            if (timeManager != null)
+            {
+                timeManager.OnTurnEnd += HandleTurnEnd;
+                timeManager.SetTimeFlow(true); // 시간 자동 흐름 기능은 현재 비활성화
+            }
 
-        if (fishingController != null)
-            fishingController.currentState = FishingController.State.Idle;
+            if (playerStats != null)
+            {
+                playerStats.InitializeHealth();
+            }
+
+            if (fishingSystem != null)
+                Debug.Log($"[GM/START] 시스템 시작 완료. 현재 단계: {fishingSystem.currentPhase.ToString()}");
+        }
+
+        void Update()
+        {
+            // 🚨 [추가된 로직] 매 프레임 시간 UI 업데이트 🚨
+            if (timeManager != null && timeDisplayUI != null)
+            {
+                int totalMinutes = timeManager.timeLeftInMinutes;
+                int hours = totalMinutes / 60;
+                int minutes = totalMinutes % 60;
+
+                // "H시간 M분" 형식으로 UI 텍스트 업데이트
+                timeDisplayUI.text = $"Time: {hours}H {minutes:D2}Min";
+            }
+
+            if (fishingSystem == null) return;
+            HandleInput();
+        }
+
+        void HandleInput()
+        {
+            // 현재 시스템은 자유 이동만 허용합니다.
+        }
+
+        private void HandleTurnEnd()
+        {
+            Debug.Log("[GM] 만조 턴이 종료되었습니다.");
+            timeManager.StartNewTurn();
+
+            if (fishingController != null)
+                fishingController.currentState = FishingController.State.Idle;
+
+            // 로비씬으로 돌아가기
+            SceneManager.LoadScene(0);
+        }
     }
 }

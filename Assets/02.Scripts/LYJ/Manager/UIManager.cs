@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections;
+using System.Diagnostics;
 
 namespace LYJ
 {
@@ -25,13 +26,15 @@ namespace LYJ
         private Text DebuText;
         private Text interestText;
 
+        private Button PayOffDebtButton;
+
         private Button tideButton;
         private Text tideText;
 
         private Button restButton;
-
         private Button lowBackButton;
-        private Button highBackButton;
+
+        public Text debtText;
 
         private void Awake()
         {
@@ -46,28 +49,38 @@ namespace LYJ
             Init();
         }
 
+        private void Start()
+        {
+            SetMoneyText(LYJ.GameManager.Instance.money);
+        }
+
         public void Init()
         {
             canvas = GameObject.Find("Canvas").gameObject;
             canvasGroup = canvas.GetComponent<CanvasGroup>();
-            tideImage = canvas.transform.GetChild(0).GetChild(0).GetComponent<Image>();
+            tideImage = canvas.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<Image>();
 
             healthSlider = canvas.transform.GetChild(0).GetChild(6).GetComponent<Slider>();
 
-            turnText = canvas.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<Text>();
-            interestDDayText = canvas.transform.GetChild(0).GetChild(0).GetChild(1).GetComponent<Text>();
-            moneyText = canvas.transform.GetChild(0).GetChild(7).GetChild(0).GetComponent<Text>();
-            DebuText = canvas.transform.GetChild(0).GetChild(8).GetChild(0).GetComponent<Text>();
-            interestText = canvas.transform.GetChild(0).GetChild(8).GetChild(1).GetComponentInChildren<Text>();
+            turnText = canvas.transform.GetChild(0).GetChild(1).GetComponent<Text>();
+            interestDDayText = canvas.transform.GetChild(0).GetChild(2).GetComponent<Text>();
+            moneyText = canvas.transform.GetChild(0).GetChild(9).GetChild(0).GetComponent<Text>();
+            DebuText = canvas.transform.GetChild(0).GetChild(10).GetChild(0).GetComponent<Text>();
+            interestText = canvas.transform.GetChild(0).GetChild(10).GetChild(1).GetComponentInChildren<Text>();
 
-            restButton = canvas.transform.GetChild(0).GetChild(2).GetComponent<Button>();
+            PayOffDebtButton = canvas.transform.GetChild(0).GetChild(6).GetComponent<Button>();
+            PayOffDebtButton.onClick.AddListener(delegate { SetDebtPhanelText(LYJ.GameManager.Instance.debt); });
+
+            restButton = canvas.transform.GetChild(0).GetChild(4).GetComponent<Button>();
             restButton.onClick.AddListener(() => { LYJ.GameManager.Instance.OnRest(); });
 
-            tideButton = canvas.transform.GetChild(0).GetChild(1).GetComponent<Button>();
+            tideButton = canvas.transform.GetChild(0).GetChild(3).GetComponent<Button>();
             tideButton.onClick.AddListener(() => { LYJ.GameManager.Instance.StartTideAction(); });
             tideText = tideButton.GetComponentInChildren<Text>();
-        }
 
+            debtText = GameObject.Find("Canvas").transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).GetComponent<Text>();
+        }
+        
         public void LowTideSceneInit()
         {
             lowBackButton = GameObject.Find("lowBackButton").GetComponent<Button>();
@@ -76,13 +89,14 @@ namespace LYJ
             });
         }
 
-        public void HighTideSceneInit()
-        {
-            lowBackButton = GameObject.Find("highBackButton").GetComponent<Button>();
-            lowBackButton.onClick.AddListener(() => {
-                SceneManager.LoadScene(0);
-            });
-        }
+        //public void HighTideSceneInit()
+        //{
+        //    lowBackButton = GameObject.Find("highBackButton").GetComponent<Button>();
+        //    lowBackButton.onClick.AddListener(() => {
+        //        SceneManager.LoadScene(0);
+        //    });
+        //}
+
 
         public void SetTurnText(int _turn)
         {
@@ -102,7 +116,11 @@ namespace LYJ
         public void SetDebuText(int _debu)
         {
             DebuText.text = string.Format("{0:N0} ¿ø", _debu);
-            DebtManager.Instance.debtText.text = string.Format("{0:N0} ¿ø", _debu);
+        }
+
+        public void SetDebtPhanelText(int _debt)
+        {
+            debtText.text = string.Format("{0:N0} ¿ø", _debt);
         }
 
         public void SetInterestText(int _currentInterest, int _nextInterest)

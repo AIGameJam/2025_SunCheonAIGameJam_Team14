@@ -91,7 +91,9 @@ public class FishingSystem : MonoBehaviour
 
     public void ConfirmCatch()
     {
-        if (currentPhase != FishingPhase.FISHING_ACTIVE) return;
+        if (currentPhase != FishingPhase.FISHING_ACTIVE) 
+            return;
+
         SuccessFishing();
     }
 
@@ -101,17 +103,16 @@ public class FishingSystem : MonoBehaviour
         int currentDepth = (fishingController != null) ? fishingController.CurrentDepthLevel : 1;
 
         // 2. PointManager에게 해당 레벨의 획득물 목록을 요청합니다.
-        GameObject[] creatures = (pointManager != null) ? pointManager.GetCreaturesByDepth(currentDepth) : new GameObject[0];
-        Debug.Log(creatures.Length);
+        ItemScriptableObject[] creatures = (pointManager != null) ? pointManager.GetCreaturesByDepth(currentDepth) : new ItemScriptableObject[0];
 
         // 🚨 3. [핵심] Null 요소를 필터링하여 유효한 프리팹만 남깁니다. 🚨
-        GameObject[] validCreatures = creatures.Where(c => c != null).ToArray();
+        ItemScriptableObject[] validCreatures = creatures.Where(c => c != null).ToArray();
 
         if (validCreatures.Length > 0)
         {
             // 4. 유효한 목록에서만 생물을 무작위로 선택
             int randomIndex = Random.Range(0, validCreatures.Length);
-            GameObject caughtCreature = validCreatures[randomIndex];
+            ItemScriptableObject caughtCreature = validCreatures[randomIndex];
 
             // 5. PlayerStats에게 화면에 표시하도록 명령
             playerStats.DisplayCaughtCreature(caughtCreature);
@@ -130,6 +131,8 @@ public class FishingSystem : MonoBehaviour
             fishingController.currentState = FishingController.State.FishingReady;
         StopAllCoroutines();
         Debug.Log("🎉 낚시 성공! 다시 찌를 던질 수 있습니다.");
+
+        fishingController.currentState = FishingController.State.Idle;
     }
 
     private void FailFishing(string reason)
@@ -139,6 +142,7 @@ public class FishingSystem : MonoBehaviour
             fishingController.currentState = FishingController.State.FishingReady;
         StopAllCoroutines();
         Debug.Log($"😭 낚시 실패! ({reason})");
+        fishingController.currentState = FishingController.State.Idle;
     }
 
     // 기타 로직 유지

@@ -14,6 +14,8 @@ public class FishingController : MonoBehaviour
     public Sprite fishingReadySprite;
     public Sprite fishingStartSprite;
 
+    public Animator animator;
+
     [Header("캐릭터 설정")]
     public float moveSpeed = 5f;
 
@@ -52,6 +54,7 @@ public class FishingController : MonoBehaviour
         baseScale = transform.localScale;
         if (characterSpriteRenderer == null)
             characterSpriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        animator = GetComponentInChildren<Animator>();
     }
 
     void Update()
@@ -63,18 +66,25 @@ public class FishingController : MonoBehaviour
     private void HandleInput()
     {
         // 🚨 [핵심] isMovementLocked가 true이면 모든 입력을 즉시 차단 🚨
-        if (isMovementLocked) return;
+        if (isMovementLocked) 
+            return;
 
         // Idle 상태일 때만 좌우 이동 실행 (경계 제한 없음)
         if (currentState == State.Idle)
         {
             float moveX = Input.GetAxisRaw("Horizontal");
+            transform.position += new Vector3(moveX, 0f, 0f) * moveSpeed * Time.deltaTime;
 
-            if (Mathf.Abs(moveX) > 0.01f)
-            {
-                transform.position += new Vector3(moveX, 0f, 0f) * moveSpeed * Time.deltaTime;
-                characterSpriteRenderer.flipX = moveX > 0f;
-            }
+            if (moveX > 0)
+                characterSpriteRenderer.flipX = false;
+            else
+                characterSpriteRenderer.flipX = true;
+
+            //if (Mathf.Abs(moveX) > 0.01f)
+            //{
+            //    transform.position += new Vector3(moveX, 0f, 0f) * moveSpeed * Time.deltaTime;
+            //    characterSpriteRenderer.flipX = moveX > 0f;
+            //}
         }
 
         // 🚨 챔질 입력 확인 및 지시 로직이 남아있다면 여기서 제거되어야 합니다. 🚨
