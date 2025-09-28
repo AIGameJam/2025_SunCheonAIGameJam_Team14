@@ -57,6 +57,9 @@ namespace LYJ
 
         private void Init()
         {
+            if (encyclopediaList.Count <= 0)
+                return;
+
             currentIndex = 0;
             itemImage.sprite = encyclopediaList[currentIndex].ItemImage;
             itemName.text = encyclopediaList[currentIndex].ItemName;

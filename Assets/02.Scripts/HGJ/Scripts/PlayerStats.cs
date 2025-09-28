@@ -70,6 +70,7 @@ public class PlayerStats : MonoBehaviour
         creatureImage.gameObject.SetActive(true);
         inventory.AcquireItem(creaturePrefab);
 
+        EncyclopediaManager.Instance.encyclopediaList.Add(creaturePrefab);
 
         // 2. 캐릭터 머리 위로 적절히 배치 (위치는 조정 가능)
         //currentCaughtCreature.transform.localPosition = new Vector3(0, 3.0f, 0);
