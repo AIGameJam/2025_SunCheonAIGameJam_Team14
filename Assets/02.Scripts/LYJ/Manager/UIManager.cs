@@ -85,7 +85,7 @@ namespace LYJ
         {
             lowBackButton = GameObject.Find("lowBackButton").GetComponent<Button>();
             lowBackButton.onClick.AddListener(() => {
-                SceneManager.LoadScene(0);
+                SceneManager.LoadScene(1);
             });
         }
 

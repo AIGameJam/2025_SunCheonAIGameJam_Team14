@@ -63,11 +63,11 @@ namespace LYJ
         {
             if(day == DayType.LowTide)
             {
-                SceneManager.LoadScene(1);
+                SceneManager.LoadScene(2);
             }
             else if(day == DayType.HighTide)
             {
-                SceneManager.LoadScene(2);
+                SceneManager.LoadScene(3);
             }
         }
 
