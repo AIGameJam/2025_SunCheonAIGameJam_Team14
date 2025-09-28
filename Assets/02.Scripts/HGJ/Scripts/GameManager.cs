@@ -16,6 +16,7 @@ namespace HGJ
         public FishingSystem fishingSystem;
         public FishingController fishingController;
         public PlayerStats playerStats;
+        public PlayerStats playerStat;
 
         [Header("UI 표시")]
         public TextMeshProUGUI phaseDisplayUI;
@@ -26,6 +27,7 @@ namespace HGJ
         {
             playerControls = new PlayerControls();
             playerControls.Player.Fish.performed += OnFishPerformed;
+            playerStat = GameObject.Find("PlayerRoot").GetComponent<PlayerStats>();
         }
 
         void OnEnable()
@@ -110,8 +112,8 @@ namespace HGJ
             if (fishingController != null)
                 fishingController.currentState = FishingController.State.Idle;
 
-            // 로비씬으로 돌아가기
             SceneManager.LoadScene(0);
+            LYJ.GameManager.Instance.money += playerStat.PriceCalculate();
         }
     }
 }

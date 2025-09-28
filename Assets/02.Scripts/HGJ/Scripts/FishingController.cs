@@ -72,6 +72,7 @@ public class FishingController : MonoBehaviour
         // Idle 상태일 때만 좌우 이동 실행 (경계 제한 없음)
         if (currentState == State.Idle)
         {
+            animator.SetBool("Idle", true);
             float moveX = Input.GetAxisRaw("Horizontal");
             transform.position += new Vector3(moveX, 0f, 0f) * moveSpeed * Time.deltaTime;
 

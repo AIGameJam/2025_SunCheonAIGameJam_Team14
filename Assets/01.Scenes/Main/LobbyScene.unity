@@ -919,16 +919,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a937b12ca1cd36e4babe1464dbd1c904, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LYJ.EncyclopediaManager
-  encyclopediaList:
-  - {fileID: 11400000, guid: 08b13cdb31e3dc74da3025c8d2fa7760, type: 2}
-  - {fileID: 11400000, guid: 1842c4e9cfde1d0489b9af66f98747d5, type: 2}
-  - {fileID: 11400000, guid: df055ea5e05bcf64b8aa0728e3246508, type: 2}
-  - {fileID: 11400000, guid: 37de1eceb24a5c8439339cd08405823d, type: 2}
-  - {fileID: 11400000, guid: 1c913de1778d14b40983b6818cb5897c, type: 2}
-  - {fileID: 11400000, guid: 2d2225dbbf505164c9f28cb6681d6ced, type: 2}
-  - {fileID: 11400000, guid: 37f5939ae6531be428b76fe0994ea760, type: 2}
-  - {fileID: 11400000, guid: 189f168da3057634d8995c052476cc41, type: 2}
-  - {fileID: 11400000, guid: 86327966525512347b34b191123b32c5, type: 2}
+  encyclopediaList: []
 --- !u!1 &221476213
 GameObject:
   m_ObjectHideFlags: 0
