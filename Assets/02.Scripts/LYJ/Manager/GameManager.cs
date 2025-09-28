@@ -154,12 +154,14 @@ namespace LYJ
         {
             // 1프레임 기다려서 모든 Awake/Start 실행 후
             yield return null;
+            yield return new WaitForEndOfFrame();
 
-            if(_scene.name == "LobbyScene")
+            if (_scene.name == "LobbyScene")
             {
                 UIManager.Instance.Init();
-                LYJ.UIManager.Instance.SetMoneyText(money);
-                LYJ.UIManager.Instance.SetDebuText(debt);
+
+                LYJ.UIManager.Instance.SetMoneyText(Instance.money);
+                LYJ.UIManager.Instance.SetDebuText(Instance.debt);
                 UIManager.Instance.SetInterestText(interest, Mathf.RoundToInt(debt * interestRatio));
                 OnTurn();
             }
@@ -170,7 +172,7 @@ namespace LYJ
             }
             else if (_scene.name == "HighTideScene")
             {
-                UIManager.Instance.HighTideSceneInit();
+                //UIManager.Instance.HighTideSceneInit();
             }
         }
     }
