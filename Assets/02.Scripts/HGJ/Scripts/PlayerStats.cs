@@ -13,7 +13,7 @@ public class PlayerStats : MonoBehaviour
     public float currentHealth = 100f;
     public int fishingRodLevel = 1;
 
-    private Inventory inventory;
+    public Inventory inventory;
     private Image creatureImage;
 
     // 현재 표시되고 있는 획득물 오브젝트
@@ -23,6 +23,21 @@ public class PlayerStats : MonoBehaviour
     {
         inventory = GameObject.Find("Canvas").transform.GetChild(2).GetComponent<Inventory>();
         creatureImage = transform.GetChild(2).GetChild(0).GetComponent<Image>();
+    }
+
+    public int PriceCalculate()
+    {
+        int _totalPrice = 0;
+
+        for (int i = 0; i <  inventory.slots.Length; i++)
+        {
+            if (inventory.slots[i] != null)
+            {
+                _totalPrice += (inventory.slots[i].item.ItemCost) * (inventory.slots[i].itemCount);
+            }
+        }
+
+        return _totalPrice;
     }
 
     public void InitializeHealth()
@@ -70,13 +85,18 @@ public class PlayerStats : MonoBehaviour
         creatureImage.gameObject.SetActive(true);
         inventory.AcquireItem(creaturePrefab);
 
-        EncyclopediaManager.Instance.encyclopediaList.Add(creaturePrefab);
+        for(int i = 0; i < EncyclopediaManager.Instance.encyclopediaList.Count; i++)
+        {
+            if (creaturePrefab.ItemName != EncyclopediaManager.Instance.encyclopediaList[i].ItemName)
+                EncyclopediaManager.Instance.encyclopediaList.Add(creaturePrefab);
+
+        }
 
         // 2. 캐릭터 머리 위로 적절히 배치 (위치는 조정 가능)
         //currentCaughtCreature.transform.localPosition = new Vector3(0, 3.0f, 0);
 
         // 3. 2초 후 오브젝트를 제거하는 코루틴 시작
-        StartCoroutine(HideCreatureAfterDelay(3f));
+        StartCoroutine(HideCreatureAfterDelay(2f));
     }
 
     private System.Collections.IEnumerator HideCreatureAfterDelay(float delay)

@@ -158,6 +158,7 @@ namespace LYJ
 
             if (_scene.name == "LobbyScene")
             {
+                EncyclopediaManager.Instance.Init();
                 UIManager.Instance.Init();
 
                 LYJ.UIManager.Instance.SetMoneyText(Instance.money);

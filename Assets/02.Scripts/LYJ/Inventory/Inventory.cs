@@ -10,7 +10,7 @@ namespace LYJ
         private GameObject inventoryBase;
         private GameObject slotParent;
 
-        private Slot[] slots;
+        public Slot[] slots;
 
         private void Start()
         {

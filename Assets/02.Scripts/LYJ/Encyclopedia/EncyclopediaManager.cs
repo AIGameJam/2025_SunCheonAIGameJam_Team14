@@ -38,6 +38,11 @@ namespace LYJ
 
         private void Start()
         {
+            Init();
+        }
+
+        public void Init()
+        {
             encyclopediaPhanel = GameObject.Find("Canvas").transform.GetChild(2).gameObject;
             itemImage = encyclopediaPhanel.transform.GetChild(0).GetChild(0).GetComponent<Image>();
             itemName = itemImage.transform.GetChild(0).GetComponent<Text>();
@@ -52,11 +57,6 @@ namespace LYJ
             rightButton.onClick.AddListener(delegate { OnNext(true); });
             leftButton.onClick.AddListener(delegate { OnNext(false); });
 
-            Init();
-        }
-
-        private void Init()
-        {
             if (encyclopediaList.Count <= 0)
                 return;
 
