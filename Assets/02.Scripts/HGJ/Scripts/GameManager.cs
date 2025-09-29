@@ -112,7 +112,7 @@ namespace HGJ
             if (fishingController != null)
                 fishingController.currentState = FishingController.State.Idle;
 
-            SceneManager.LoadScene(0);
+            SceneManager.LoadScene(1);
             LYJ.GameManager.Instance.money += playerStat.PriceCalculate();
         }
     }

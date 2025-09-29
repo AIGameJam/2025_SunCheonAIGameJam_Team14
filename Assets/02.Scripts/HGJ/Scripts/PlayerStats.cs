@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using LYJ;
+using UnityEngine.SceneManagement;
 
 public class PlayerStats : MonoBehaviour
 {
@@ -33,7 +34,7 @@ public class PlayerStats : MonoBehaviour
         {
             if (inventory.slots[i] != null)
             {
-                _totalPrice += (inventory.slots[i].item.ItemCost) * (inventory.slots[i].itemCount);
+                _totalPrice += (inventory.slots[i].item.ItemCost * inventory.slots[i].itemCount);
             }
         }
 
@@ -96,7 +97,7 @@ public class PlayerStats : MonoBehaviour
         //currentCaughtCreature.transform.localPosition = new Vector3(0, 3.0f, 0);
 
         // 3. 2초 후 오브젝트를 제거하는 코루틴 시작
-        StartCoroutine(HideCreatureAfterDelay(2f));
+        StartCoroutine(HideCreatureAfterDelay(1f));
     }
 
     private System.Collections.IEnumerator HideCreatureAfterDelay(float delay)
