@@ -63,11 +63,11 @@ namespace LYJ
         {
             if(day == DayType.LowTide)
             {
-                SceneManager.LoadScene(1);
+                SceneManager.LoadScene(2);
             }
             else if(day == DayType.HighTide)
             {
-                SceneManager.LoadScene(2);
+                SceneManager.LoadScene(3);
             }
         }
 
@@ -154,12 +154,15 @@ namespace LYJ
         {
             // 1프레임 기다려서 모든 Awake/Start 실행 후
             yield return null;
+            yield return new WaitForEndOfFrame();
 
-            if(_scene.name == "LobbyScene")
+            if (_scene.name == "LobbyScene")
             {
+                EncyclopediaManager.Instance.Init();
                 UIManager.Instance.Init();
-                LYJ.UIManager.Instance.SetMoneyText(money);
-                LYJ.UIManager.Instance.SetDebuText(debt);
+
+                LYJ.UIManager.Instance.SetMoneyText(Instance.money);
+                LYJ.UIManager.Instance.SetDebuText(Instance.debt);
                 UIManager.Instance.SetInterestText(interest, Mathf.RoundToInt(debt * interestRatio));
                 OnTurn();
             }
@@ -170,7 +173,7 @@ namespace LYJ
             }
             else if (_scene.name == "HighTideScene")
             {
-                UIManager.Instance.HighTideSceneInit();
+                //UIManager.Instance.HighTideSceneInit();
             }
         }
     }

@@ -14,9 +14,8 @@ public struct FishingPointData
 public struct CatchableCreatureSet
 {
     public int depthLevel; // 이 목록이 적용될 단계 (예: 1, 2, 3)
-    public GameObject[] creaturePrefabs; // 이 단계에서 획득 가능한 생물 프리팹 목록 (사각형 프리팹 연결)
+    public ItemScriptableObject[] creaturePrefabs; // 이 단계에서 획득 가능한 생물 프리팹 목록 (사각형 프리팹 연결)
 }
-
 
 public class PointManager : MonoBehaviour
 {
@@ -31,7 +30,7 @@ public class PointManager : MonoBehaviour
     /// <summary>
     /// 지정된 단계 레벨에 해당하는 획득물 프리팹 배열을 반환합니다.
     /// </summary>
-    public GameObject[] GetCreaturesByDepth(int targetDepthLevel)
+    public ItemScriptableObject[] GetCreaturesByDepth(int targetDepthLevel)
     {
         // Linq를 사용하여 targetDepthLevel과 일치하는 획득물 세트를 찾습니다.
         CatchableCreatureSet set = creatureSetsByDepth
@@ -39,7 +38,7 @@ public class PointManager : MonoBehaviour
 
         if (set.creaturePrefabs == null)
         {
-            return new GameObject[0];
+            return new ItemScriptableObject[0];
         }
 
         return set.creaturePrefabs;

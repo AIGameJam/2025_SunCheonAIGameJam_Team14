@@ -30,6 +30,7 @@ public class TimeManager : MonoBehaviour
 
         // 시간 소모
         timeLeftInMinutes -= minutes;
+        Debug.Log(timeLeftInMinutes);
 
         if (timeLeftInMinutes <= 0)
         {

@@ -7,10 +7,9 @@ namespace LYJ
     {
         private static DebtManager instance;
         public static DebtManager Instance { get { return instance; } }
-
+        
         private InputField input;
         private Button repairedButton;
-        public Text debtText;
         public int repaidAmount;
 
         private void Awake()
@@ -22,17 +21,14 @@ namespace LYJ
             }
 
             instance = this;
-            Init();
         }
 
-        private void Init()
+        private void Start()
         {
             input = transform.GetChild(1).GetComponent<InputField>();
             input.onValueChanged.AddListener(delegate { InputMoney(); });
             repairedButton = transform.GetChild(2).GetComponent<Button>();
             repairedButton.onClick.AddListener(delegate { OnRepairedButton(); });
-            debtText = transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<Text>();
-            LYJ.UIManager.Instance.SetDebuText(LYJ.GameManager.Instance.debt);
         }
 
         private void Update()

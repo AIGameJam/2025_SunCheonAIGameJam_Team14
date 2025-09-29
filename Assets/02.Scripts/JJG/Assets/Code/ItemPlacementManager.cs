@@ -55,7 +55,7 @@ public class ItemPlacementManager : MonoBehaviour
         }
     }
 
-    private void PlaceItemsInTiles()
+    public void PlaceItemsInTiles()
     {
         specialTilesDict = new Dictionary<Vector3Int, SpecialTileData>();
         hintObjects = new Dictionary<Vector3Int, GameObject>();

@@ -24,7 +24,7 @@ namespace JJG
     {
         [Header("연결 필수")]
         public Tilemap tilemap;
-        private ItemPlacementManager itemManager;
+        public ItemPlacementManager itemManager;
         // (향후 추가) 파괴 효과를 관리할 매니저
         // private DestructionEffectManager effectManager; 
 
@@ -101,7 +101,7 @@ namespace JJG
         SaveTiles();
     }
     
-    private void LoadTiles()
+    public void LoadTiles()
     {
         if (!File.Exists(savePath)) return;
 

@@ -68,6 +68,7 @@ public class FishingSystem : MonoBehaviour
             fishingController.currentState = FishingController.State.FishingStart;
 
         Debug.Log("✅ 낚시 실행! FishingPhase: FISHING_ACTIVE. (찌 던짐)");
+        fishingController.animator.SetBool("Fishing", true);
 
         float timeUntilSignal = UnityEngine.Random.Range(0.5f, 5.0f);
         StartCoroutine(WaitForSignal(timeUntilSignal));
@@ -91,7 +92,9 @@ public class FishingSystem : MonoBehaviour
 
     public void ConfirmCatch()
     {
-        if (currentPhase != FishingPhase.FISHING_ACTIVE) return;
+        if (currentPhase != FishingPhase.FISHING_ACTIVE) 
+            return;
+
         SuccessFishing();
     }
 
@@ -101,27 +104,29 @@ public class FishingSystem : MonoBehaviour
         int currentDepth = (fishingController != null) ? fishingController.CurrentDepthLevel : 1;
 
         // 2. PointManager에게 해당 레벨의 획득물 목록을 요청합니다.
-        GameObject[] creatures = (pointManager != null) ? pointManager.GetCreaturesByDepth(currentDepth) : new GameObject[0];
-        Debug.Log(creatures.Length);
+        ItemScriptableObject[] creatures = (pointManager != null) ? pointManager.GetCreaturesByDepth(currentDepth) : new ItemScriptableObject[0];
 
         // 🚨 3. [핵심] Null 요소를 필터링하여 유효한 프리팹만 남깁니다. 🚨
-        GameObject[] validCreatures = creatures.Where(c => c != null).ToArray();
+        ItemScriptableObject[] validCreatures = creatures.Where(c => c != null).ToArray();
 
         if (validCreatures.Length > 0)
         {
             // 4. 유효한 목록에서만 생물을 무작위로 선택
             int randomIndex = Random.Range(0, validCreatures.Length);
-            GameObject caughtCreature = validCreatures[randomIndex];
+            ItemScriptableObject caughtCreature = validCreatures[randomIndex];
 
             // 5. PlayerStats에게 화면에 표시하도록 명령
             playerStats.DisplayCaughtCreature(caughtCreature);
             Debug.Log($"🎉 낚시 성공! 획득 지점: {currentDepth}단계. 획득 생물: {caughtCreature.name}");
+            fishingController.animator.SetTrigger("Success");
         }
 
         else
         {
             // 이 경고가 나온다면 Inspector의 획득물 슬롯이 비어있다는 뜻입니다.
             Debug.LogWarning($"⚠️ 낚시 성공! 하지만 {currentDepth}단계에서 획득 가능한 생물이 설정되지 않았습니다. 빈 손!");
+            fishingController.animator.SetTrigger("Fail");
+
         }
 
         // --- 상태 복구 ---
@@ -130,6 +135,10 @@ public class FishingSystem : MonoBehaviour
             fishingController.currentState = FishingController.State.FishingReady;
         StopAllCoroutines();
         Debug.Log("🎉 낚시 성공! 다시 찌를 던질 수 있습니다.");
+        fishingController.animator.SetTrigger("Success");
+
+
+        fishingController.currentState = FishingController.State.Idle;
     }
 
     private void FailFishing(string reason)
@@ -139,6 +148,9 @@ public class FishingSystem : MonoBehaviour
             fishingController.currentState = FishingController.State.FishingReady;
         StopAllCoroutines();
         Debug.Log($"😭 낚시 실패! ({reason})");
+        fishingController.animator.SetTrigger("Fail");
+
+        fishingController.currentState = FishingController.State.Idle;
     }
 
     // 기타 로직 유지

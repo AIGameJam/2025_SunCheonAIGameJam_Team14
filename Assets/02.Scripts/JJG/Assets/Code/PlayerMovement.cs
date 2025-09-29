@@ -1,153 +1,188 @@
 using UnityEngine;
+using UnityEngine.Tilemaps;
 namespace JJG
 {
-
-
     public class PlayerMovement : MonoBehaviour
     {
         Rigidbody2D rb;
+        private Animator animator;
 
         float moveDir;
-        public float moveSpeed = 250f;
+        public float moveSpeed = 5f;
         public float jumpPower = 5f;
-        public Transform[] HitPoint;
+        public Transform[] HitPoint; // [0]: 오른쪽, [1]: 왼쪽, [2]: 아래쪽
         public LayerMask whatisPlatform;
 
-        // --- 추가된 변수 ---
         [Header("파괴 속도 설정")]
-        [Tooltip("한 번 타격 후 다음 타격까지의 시간 (초)")]
         public float digSpeed = 0.2f;
-        private float nextDigTime = 0f; // 다음 타격이 가능한 시간
-                                        // --- 여기까지 ---
+        private float nextDigTime = 0f;
+        
+        private int lastHorizontalDir = 1;
+        // 현재 파괴 중인지 상태를 기억하는 변수
+        private bool isDigging = false;
+        private bool isJumping = false;
+        private bool isWalking = false;
         void Start()
         {
             rb = GetComponent<Rigidbody2D>();
+            animator = GetComponentInChildren<Animator>(); 
+            Debug.Log($"[Start] Animator 연결됨? {(animator != null ? "YES" : "NO")}");
         }
 
         void Update()
         {
+            if (PlayerHealth.instance != null && PlayerHealth.instance.isDead)
+            {
+                moveDir = 0;
+                return;
+            }
+
             moveDir = Input.GetAxisRaw("Horizontal");
+
+            if (moveDir != 0)
+            {
+                lastHorizontalDir = (int)Mathf.Sign(moveDir);
+            }
+            
             if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
             {
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpPower); // 기존 속도에 더하는 것보다 Y속도를 직접 지정하는 것이 더 깔끔합니다.
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpPower);
+                 Debug.Log("[Update] 점프 입력 감지");
             }
+            
+            UpdateAnimator();
         }
 
-        private void FixedUpdate()
+        void FixedUpdate()
         {
-            if (PlayerHealth.instance != null && PlayerHealth.instance.isDead) return;
-            float verticalDir = Input.GetAxisRaw("Vertical");
-            bool hasDug = Dig(moveDir, verticalDir);
-
-            if (!hasDug)
+            if (PlayerHealth.instance != null && PlayerHealth.instance.isDead)
             {
-                rb.AddForce(new Vector2(moveDir * Time.fixedDeltaTime * moveSpeed, 0));
+                rb.linearVelocity = Vector2.zero;
+                return;
+            }
 
-                // ★★★ 이동 시 체력 소모 로직 추가 ★★★
-                // 좌우 이동 입력이 있을 때만
-                if (moveDir != 0 && PlayerHealth.instance != null)
+            // 1. 파괴 가능한 블록이 있는지 먼저 확인
+            Collider2D blockToDig = CheckForBlock();
+            
+            // 2. 블록이 있다면 파괴 로직 실행
+            if (blockToDig != null)
+            {
+                Debug.Log("[Dig] 파괴 시작");
+                // 파괴를 '시작'하는 순간에만 애니메이션 실행
+                if (!isDigging)
                 {
-                    PlayerHealth.instance.ConsumeHealthForMovement();
+                    isDigging = true;
+                    TriggerDigAnimation();
                 }
-            }
-        }
 
-        public bool Dig(float directionX, float directionY)
-        {
-            if (PlayerHealth.instance != null && PlayerHealth.instance.isDead) return false;
-
-            if (directionX == 0 && directionY == 0) return false;
-            // 방향 입력이 없으면 아무것도 안 함
-            if (directionX == 0 && directionY == 0) return false;
-
-            // --- 쿨다운 확인 로직 추가 ---
-            if (Time.time >= nextDigTime)
-            {
-                Transform currentHitPoint = null;
-
-                if (directionX > 0)
-                    currentHitPoint = HitPoint[0];
-                else if (directionX < 0)
-                    currentHitPoint = HitPoint[1];
-                else if (directionY < 0)
-                    currentHitPoint = HitPoint[2];
-
-                if (currentHitPoint == null) return false;
-
-                Collider2D overCollider2d = Physics2D.OverlapCircle(currentHitPoint.position, 0.02f, whatisPlatform);
-
-                if (overCollider2d != null)
+                // 쿨다운에 맞춰 타격
+                if (Time.time >= nextDigTime)
                 {
-                    // 타격에 성공하면 다음 타격 가능 시간을 미래로 설정
                     nextDigTime = Time.time + digSpeed;
-
-                    Bricks bricksComponent = overCollider2d.transform.GetComponent<Bricks>();
+                    Bricks bricksComponent = blockToDig.GetComponent<Bricks>();
                     if (bricksComponent != null)
                     {
-                        bricksComponent.OnTileHit(currentHitPoint.position);
-                        if (PlayerHealth.instance != null)
+                        // HitPoint의 위치를 다시 계산해서 전달
+                        Transform hitPoint = GetCurrentHitPoint();
+                        if(hitPoint != null)
                         {
-                            PlayerHealth.instance.ConsumeHealthForDigging(currentHitPoint.position);
+                            Debug.Log($"[Dig] 타일 피격: {hitPoint.position}");
+                            bricksComponent.OnTileHit(hitPoint.position);
+                            if (PlayerHealth.instance != null)
+                            {
+                                PlayerHealth.instance.ConsumeHealthForDigging(hitPoint.position);
+                            }
                         }
-                        if (directionY < 0)
-                        {
-                            transform.position += Vector3.down * 0.05f;
-                            rb.AddForce(Vector2.down * 2f, ForceMode2D.Impulse);
-                        }
-                        return true;
                     }
                 }
             }
-            // 쿨다운 중이거나, 감지된 것이 없으면 false 반환
+            // 3. 블록이 없다면 이동 로직 실행
+            else
+            {
+                Debug.Log("[Dig] 파괴 중단");
+                isDigging = false;
+                Move();
+            }
+        }
+
+        private void Move()
+        {
+            rb.linearVelocity = new Vector2(moveDir * moveSpeed, rb.linearVelocity.y);
+        }
+
+        private void UpdateAnimator()
+        {
+            if (animator == null)
+            {
+                Debug.LogWarning("[Animator] animator가 null입니다!");
+                return;
+            }
+
+            isWalking = moveDir != 0 && !isDigging;
+            isJumping = !IsGrounded();
+        }
+
+        // 파괴할 블록을 '탐색'만 하는 함수
+        private Collider2D CheckForBlock()
+        {
+            Transform currentHitPoint = GetCurrentHitPoint();
+            if (currentHitPoint == null) return null;
+            Collider2D col = Physics2D.OverlapCircle(currentHitPoint.position, 0.02f, whatisPlatform);
+            if (col != null)
+            {
+                Debug.Log($"[CheckForBlock] 블록 감지 at {currentHitPoint.position}");
+            }
+            return col;
+        }
+
+        // 현재 입력에 맞는 HitPoint를 반환하는 함수
+        private Transform GetCurrentHitPoint()
+        {
+            float verticalDir = Input.GetAxisRaw("Vertical");
+            if (verticalDir < 0) return HitPoint[2];
+
+            // 수평 이동 입력이 있을 때만 좌우를 판단
+            if (moveDir > 0) return HitPoint[0];
+            if (moveDir < 0) return HitPoint[1];
+            
+            // 가만히 서있을 때는 이전에 봤던 방향을 기준으로 판단
+            return (lastHorizontalDir == 1) ? HitPoint[0] : HitPoint[1];
+        }
+
+        // 현재 입력에 맞는 애니메이션 트리거를 발동시키는 함수
+        private void TriggerDigAnimation()
+        {
+            float verticalDir = Input.GetAxisRaw("Vertical");
+            if (verticalDir < 0)
+            {
+                animator.SetTrigger("Dig_Bottom");
+            }
+            else
+            {
+                animator.SetTrigger("Dig_Side");
+            }
+        }
+
+        private bool IsGrounded()
+        {
+            float extraHeight = 0.1f;
+            if (Physics2D.Raycast(transform.position, Vector2.down, 0.5f + extraHeight, whatisPlatform)) return true;
+            if (Physics2D.Raycast(transform.position, Vector2.left, 0.5f + extraHeight, whatisPlatform)) return true;
+            if (Physics2D.Raycast(transform.position, Vector2.right, 0.5f + extraHeight, whatisPlatform)) return true;
             return false;
         }
+
         private void OnTriggerEnter2D(Collider2D other)
         {
-            // 부딪힌 오브젝트의 태그가 "Item"인지 확인
             if (other.CompareTag("Item"))
             {
-                // 부딪힌 오브젝트에서 ItemPickup 스크립트를 가져옴
                 ItemPickup itemToPick = other.GetComponent<ItemPickup>();
-                Debug.Log("여기까진 된다.");
-                // ItemPickup 스크립트가 있다면 (즉, 아이템이라면)
                 if (itemToPick != null)
                 {
-                    Debug.Log("이게되네");
-                    // 1. 인벤토리에 아이템 추가 요청 (싱글톤 사용)
                     Inventory.instance.AddItem(itemToPick.itemData);
-
-                    // 2. 월드에 있던 아이템 오브젝트 파괴
                     Destroy(other.gameObject);
                 }
             }
-        }
-        private bool IsGrounded()
-        {
-            float extraHeight = 0.1f; // 약간의 추가 감지 거리
-            
-            // 1. 아래쪽 확인
-            RaycastHit2D groundCheck = Physics2D.Raycast(transform.position, Vector2.down, 0.5f + extraHeight, whatisPlatform);
-            if (groundCheck.collider != null)
-            {
-                return true; // 아래에 블록이 있으면 점프 가능
-            }
-
-            // 2. 왼쪽 확인
-            RaycastHit2D leftWallCheck = Physics2D.Raycast(transform.position, Vector2.left, 0.5f + extraHeight, whatisPlatform);
-            if (leftWallCheck.collider != null)
-            {
-                return true; // 왼쪽에 블록이 있으면 점프 가능 (벽점프)
-            }
-
-            // 3. 오른쪽 확인
-            RaycastHit2D rightWallCheck = Physics2D.Raycast(transform.position, Vector2.right, 0.5f + extraHeight, whatisPlatform);
-            if (rightWallCheck.collider != null)
-            {
-                return true; // 오른쪽에 블록이 있으면 점프 가능 (벽점프)
-            }
-            
-            // 위 3가지 경우에 모두 해당하지 않으면 점프 불가능
-            return false;
         }
     }
 }
