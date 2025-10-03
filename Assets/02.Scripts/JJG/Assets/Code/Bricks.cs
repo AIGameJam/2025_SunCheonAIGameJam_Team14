@@ -49,87 +49,91 @@ namespace JJG
         LoadTiles();
     }
 
-    public void OnTileHit(Vector3 worldPos)
-    {
-        Vector3Int cellPosition = tilemap.WorldToCell(worldPos);
-        TileBase currentTile = tilemap.GetTile(cellPosition);
-        if (currentTile == null) return;
+        // Bricks.cs
 
-        int maxHealth = baseHealth - (cellPosition.y / depthMultiplier);
-        if (maxHealth < 1) maxHealth = 1;
-
-        int currentHealth;
-        if (!damagedTilesDict.ContainsKey(cellPosition))
+        public void OnTileHit(Vector3 worldPos)
         {
-            currentHealth = maxHealth;
-        }
-        else
-        {
-            currentHealth = damagedTilesDict[cellPosition];
-        }
+            Vector3Int cellPosition = tilemap.WorldToCell(worldPos);
+            TileBase currentTile = tilemap.GetTile(cellPosition);
+            if (currentTile == null) return;
 
-        currentHealth--;
-        damagedTilesDict[cellPosition] = currentHealth;
+            int maxHealth = baseHealth - (cellPosition.y / depthMultiplier);
+            if (maxHealth < 1) maxHealth = 1;
 
-        if (currentHealth <= 0)
-        {
-            tilemap.SetTile(cellPosition, null);
-            damagedTilesDict.Remove(cellPosition);
-
-            if (itemManager != null)
+            int currentHealth;
+            if (!damagedTilesDict.ContainsKey(cellPosition))
             {
-                itemManager.OnTileDestroyed(cellPosition);
+                currentHealth = maxHealth;
+            }
+            else
+            {
+                currentHealth = damagedTilesDict[cellPosition];
+            }
+
+            currentHealth--;
+            damagedTilesDict[cellPosition] = currentHealth; // 체력이 0이 되어도 일단 기록합니다.
+
+            if (currentHealth <= 0)
+            {
+                tilemap.SetTile(cellPosition, null);
+                // damagedTilesDict.Remove(cellPosition); // <<< 이 줄을 주석 처리하거나 삭제하세요!
+
+                if (itemManager != null)
+                {
+                    itemManager.OnTileDestroyed(cellPosition);
+                }
+            }
+            else
+            {
+                if (crackTiles.Length > 0)
+                {
+                    float damagePercentage = 1f - ((float)currentHealth / maxHealth);
+                    int crackIndex = Mathf.FloorToInt(damagePercentage * crackTiles.Length);
+                    crackIndex = Mathf.Clamp(crackIndex, 0, crackTiles.Length - 1);
+                    tilemap.SetTile(cellPosition, crackTiles[crackIndex]);
+                }
+            }
+
+            SaveTiles();
+        }
+
+        // Bricks.cs
+
+        public void LoadTiles()
+        {
+            if (!File.Exists(savePath)) return;
+
+            string json = File.ReadAllText(savePath);
+            TileSaveData loadedData = JsonUtility.FromJson<TileSaveData>(json);
+
+            damagedTilesDict.Clear();
+            foreach (var tileData in loadedData.damagedTiles)
+            {
+                damagedTilesDict.Add(tileData.position, tileData.remainingHealth);
+
+                // ▼▼▼ 로드 로직 수정 ▼▼▼
+                if (tileData.remainingHealth <= 0)
+                {
+                    // 체력이 0 이하면 파괴된 상태이므로 타일을 제거합니다.
+                    tilemap.SetTile(tileData.position, null);
+                }
+                else if (crackTiles.Length > 0)
+                {
+                    // 체력이 0보다 크면 기존 로직대로 금 간 타일을 복원합니다.
+                    int maxHealth = baseHealth - (tileData.position.y / depthMultiplier);
+                    if (maxHealth < 1) maxHealth = 2;
+
+                    float damagePercentage = 1f - ((float)tileData.remainingHealth / maxHealth);
+                    int crackIndex = Mathf.FloorToInt(damagePercentage * crackTiles.Length);
+                    crackIndex = Mathf.Clamp(crackIndex, 0, crackTiles.Length - 1);
+                    tilemap.SetTile(tileData.position, crackTiles[crackIndex]);
+                }
             }
         }
-        else
-        {
-            // --- 색상 변경 대신 '타일 교체' 로직 ---
-            if (crackTiles.Length > 0)
-            {
-                // 손상도를 0.0 ~ 1.0 비율로 계산
-                float damagePercentage = 1f - ((float)currentHealth / maxHealth);
-                // 비율에 맞는 금 간 타일 인덱스 계산
-                int crackIndex = Mathf.FloorToInt(damagePercentage * crackTiles.Length);
-                // 인덱스가 배열 범위를 벗어나지 않도록 보정
-                crackIndex = Mathf.Clamp(crackIndex, 0, crackTiles.Length - 1);
+        // Bricks.cs 클래스 내부
 
-                // 계산된 인덱스의 금 간 타일로 교체
-                tilemap.SetTile(cellPosition, crackTiles[crackIndex]);
-            }
-        }
-        
-        SaveTiles();
-    }
-    
-    public void LoadTiles()
-    {
-        if (!File.Exists(savePath)) return;
-
-        string json = File.ReadAllText(savePath);
-        TileSaveData loadedData = JsonUtility.FromJson<TileSaveData>(json);
-        
-        damagedTilesDict.Clear();
-        foreach (var tileData in loadedData.damagedTiles)
-        {
-            damagedTilesDict.Add(tileData.position, tileData.remainingHealth);
-            
-            // --- 저장된 손상 상태에 맞춰 금 간 타일 복원 ---
-            if (crackTiles.Length > 0)
-            {
-                int maxHealth = baseHealth - (tileData.position.y / depthMultiplier);
-                if (maxHealth < 1) maxHealth = 1;
-                
-                float damagePercentage = 1f - ((float)tileData.remainingHealth / maxHealth);
-                int crackIndex = Mathf.FloorToInt(damagePercentage * crackTiles.Length);
-                crackIndex = Mathf.Clamp(crackIndex, 0, crackTiles.Length - 1);
-                tilemap.SetTile(tileData.position, crackTiles[crackIndex]);
-            }
-        }
-    }
-    // Bricks.cs 클래스 내부
-
-    // (LoadTiles 함수 아래에 추가)
-    private void SaveTiles()
+        // (LoadTiles 함수 아래에 추가)
+        private void SaveTiles()
     {
         TileSaveData saveData = new TileSaveData();
         saveData.damagedTiles = new List<DamagedTileData>();

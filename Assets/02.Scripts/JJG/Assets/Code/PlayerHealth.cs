@@ -58,7 +58,7 @@ namespace JJG
                     {
                         TakeDamage(maxHealth * drownDamagePercent);
                         drownTimer = 0f;
-                        Debug.Log("침수 피해! 남은 체력: " + currentHealth);
+                        //Debug.Log("침수 피해! 남은 체력: " + currentHealth);
                     }
                 }
                 else
@@ -81,7 +81,7 @@ namespace JJG
                 currentHealth = 0;
                 Die(); // 사망 함수 호출
             }
-            Debug.Log("피해 입음! 남은 체력: " + currentHealth);
+            //Debug.Log("피해 입음! 남은 체력: " + currentHealth);
         }
 
         public void Heal(float amount)

@@ -1,32 +1,37 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
+
 namespace JJG
 {
     public class PlayerMovement : MonoBehaviour
     {
         Rigidbody2D rb;
         private Animator animator;
+        private SpriteRenderer spriteRenderer; // ▼▼▼ 스프라이트 좌우 반전을 위한 변수
 
-        float moveDir;
+        [Header("이동 및 점프 설정")]
         public float moveSpeed = 5f;
         public float jumpPower = 5f;
+
+        [Header("땅 & 벽 감지 설정")]
         public Transform[] HitPoint; // [0]: 오른쪽, [1]: 왼쪽, [2]: 아래쪽
         public LayerMask whatisPlatform;
+        public float wallCheckDistance = 0.5f; // 벽을 감지할 거리
+        private bool isWalled; // 벽에 붙어있는지 확인
 
-        [Header("파괴 속도 설정")]
-        public float digSpeed = 0.2f;
-        private float nextDigTime = 0f;
-        
+        [Header("벽 타기 설정")]
+        public float climbingSpeed = 3f; // 벽을 타고 올라가는 속도
+        private bool isClimbing; // 현재 벽 타기 중인지 확인
+
+        private float moveDir;
+        private float verticalDir; // 위/아래 입력 감지를 위해 추가
         private int lastHorizontalDir = 1;
-        // 현재 파괴 중인지 상태를 기억하는 변수
-        private bool isDigging = false;
-        private bool isJumping = false;
-        private bool isWalking = false;
+
         void Start()
         {
             rb = GetComponent<Rigidbody2D>();
-            animator = GetComponentInChildren<Animator>(); 
-            Debug.Log($"[Start] Animator 연결됨? {(animator != null ? "YES" : "NO")}");
+            animator = GetComponentInChildren<Animator>();
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>(); // 자식 오브젝트에서 SpriteRenderer 찾기
         }
 
         void Update()
@@ -37,20 +42,54 @@ namespace JJG
                 return;
             }
 
+            // 이동 및 방향키 입력
             moveDir = Input.GetAxisRaw("Horizontal");
+            verticalDir = Input.GetAxisRaw("Vertical");
 
-            if (moveDir != 0)
+            // ▼▼▼ 스프라이트 좌우 반전 로직 ▼▼▼
+            if (moveDir > 0)
             {
-                lastHorizontalDir = (int)Mathf.Sign(moveDir);
+                spriteRenderer.flipX = true; // 오른쪽 볼 때
             }
-            
-            if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
+            else if (moveDir < 0)
+            {
+                spriteRenderer.flipX = false; // 왼쪽 볼 때
+            }
+
+            // ▼▼▼ 개선된 점프 로직 (벽에 붙어있을 때도 점프 가능) ▼▼▼
+            if (Input.GetKeyDown(KeyCode.Space) && (IsGrounded() || isWalled) && !isClimbing)
             {
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpPower);
-                 Debug.Log("[Update] 점프 입력 감지");
             }
-            
-            UpdateAnimator();
+
+            // 마우스 클릭 시 파괴
+            if (Input.GetMouseButtonDown(0))
+            {
+                Collider2D blockToDig = CheckForBlock();
+                if (blockToDig != null)
+                {
+                    TriggerDigAnimation();
+                    Bricks bricksComponent = blockToDig.GetComponent<Bricks>();
+                    if (bricksComponent != null)
+                    {
+                        Transform hitPoint = GetCurrentHitPoint();
+                        if (hitPoint != null)
+                        {
+                            bricksComponent.OnTileHit(hitPoint.position);
+                            if (PlayerHealth.instance != null)
+                            {
+                                PlayerHealth.instance.ConsumeHealthForDigging(hitPoint.position);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 벽 타기 상태 업데이트
+            UpdateClimbingState();
+            // 애니메이션 상태 업데이트
+            UpdateAnimationStates();
+            LogCurrentAnimationState(); // 현재 애니메이션 상태를 로그로 출력
         }
 
         void FixedUpdate()
@@ -61,114 +100,88 @@ namespace JJG
                 return;
             }
 
-            // 1. 파괴 가능한 블록이 있는지 먼저 확인
-            Collider2D blockToDig = CheckForBlock();
-            
-            // 2. 블록이 있다면 파괴 로직 실행
-            if (blockToDig != null)
+            // ▼▼▼ 벽 타기 / 일반 이동 물리 처리 ▼▼▼
+            if (isClimbing)
             {
-                Debug.Log("[Dig] 파괴 시작");
-                // 파괴를 '시작'하는 순간에만 애니메이션 실행
-                if (!isDigging)
-                {
-                    isDigging = true;
-                    TriggerDigAnimation();
-                }
-
-                // 쿨다운에 맞춰 타격
-                if (Time.time >= nextDigTime)
-                {
-                    nextDigTime = Time.time + digSpeed;
-                    Bricks bricksComponent = blockToDig.GetComponent<Bricks>();
-                    if (bricksComponent != null)
-                    {
-                        // HitPoint의 위치를 다시 계산해서 전달
-                        Transform hitPoint = GetCurrentHitPoint();
-                        if(hitPoint != null)
-                        {
-                            Debug.Log($"[Dig] 타일 피격: {hitPoint.position}");
-                            bricksComponent.OnTileHit(hitPoint.position);
-                            if (PlayerHealth.instance != null)
-                            {
-                                PlayerHealth.instance.ConsumeHealthForDigging(hitPoint.position);
-                            }
-                        }
-                    }
-                }
+                // 벽 타기: 중력을 무시하고 위/아래로 이동
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, verticalDir * climbingSpeed);
             }
-            // 3. 블록이 없다면 이동 로직 실행
             else
             {
-                Debug.Log("[Dig] 파괴 중단");
-                isDigging = false;
-                Move();
+                // 일반 이동
+                rb.linearVelocity = new Vector2(moveDir * moveSpeed, rb.linearVelocity.y);
             }
         }
 
-        private void Move()
+        private void UpdateClimbingState()
         {
-            rb.linearVelocity = new Vector2(moveDir * moveSpeed, rb.linearVelocity.y);
-        }
+            isWalled = IsWalled();
 
-        private void UpdateAnimator()
-        {
-            if (animator == null)
+            // 벽에 붙어있고, 땅이 아니며, 위 방향키를 누를 때 => 클라이밍 상태
+            if (isWalled && !IsGrounded() && verticalDir > 0)
             {
-                Debug.LogWarning("[Animator] animator가 null입니다!");
-                return;
+                isClimbing = true;
             }
-
-            isWalking = moveDir != 0 && !isDigging;
-            isJumping = !IsGrounded();
-        }
-
-        // 파괴할 블록을 '탐색'만 하는 함수
-        private Collider2D CheckForBlock()
-        {
-            Transform currentHitPoint = GetCurrentHitPoint();
-            if (currentHitPoint == null) return null;
-            Collider2D col = Physics2D.OverlapCircle(currentHitPoint.position, 0.02f, whatisPlatform);
-            if (col != null)
+            else
             {
-                Debug.Log($"[CheckForBlock] 블록 감지 at {currentHitPoint.position}");
+                isClimbing = false;
             }
-            return col;
         }
 
-        // 현재 입력에 맞는 HitPoint를 반환하는 함수
-        private Transform GetCurrentHitPoint()
+        private void UpdateAnimationStates()
         {
-            float verticalDir = Input.GetAxisRaw("Vertical");
-            if (verticalDir < 0) return HitPoint[2];
+            if (animator == null) return;
 
-            // 수평 이동 입력이 있을 때만 좌우를 판단
-            if (moveDir > 0) return HitPoint[0];
-            if (moveDir < 0) return HitPoint[1];
-            
-            // 가만히 서있을 때는 이전에 봤던 방향을 기준으로 판단
-            return (lastHorizontalDir == 1) ? HitPoint[0] : HitPoint[1];
+            // 벽 타기 애니메이션
+            animator.SetBool("IsClimbing", isClimbing);
+
+            // 점프해서 올라갈 때 (swim 애니메이션)
+            bool isJumpingUp = rb.linearVelocity.y > 0.1f && !IsGrounded() && !isClimbing;
+            animator.SetBool("IsSwimming", isJumpingUp);
+
+            // 좌우로 걸을 때 (walk 애니메이션)
+            bool isWalking = moveDir != 0 && IsGrounded();
+            animator.SetBool("IsWalking", isWalking);
         }
 
-        // 현재 입력에 맞는 애니메이션 트리거를 발동시키는 함수
         private void TriggerDigAnimation()
         {
             float verticalDir = Input.GetAxisRaw("Vertical");
             if (verticalDir < 0)
             {
-                animator.SetTrigger("Dig_Bottom");
+                animator.SetTrigger("DigBottom");
             }
             else
             {
-                animator.SetTrigger("Dig_Side");
+                animator.SetTrigger("DigSide");
             }
+        }
+
+        private Collider2D CheckForBlock()
+        {
+            Transform currentHitPoint = GetCurrentHitPoint();
+            if (currentHitPoint == null) return null;
+            return Physics2D.OverlapCircle(currentHitPoint.position, 0.02f, whatisPlatform);
+        }
+
+        private Transform GetCurrentHitPoint()
+        {
+            float verticalDir = Input.GetAxisRaw("Vertical");
+            if (verticalDir < 0) return HitPoint[2];
+            if (moveDir > 0) return HitPoint[0];
+            if (moveDir < 0) return HitPoint[1];
+            return (lastHorizontalDir == 1) ? HitPoint[0] : HitPoint[1];
         }
 
         private bool IsGrounded()
         {
-            float extraHeight = 0.1f;
-            if (Physics2D.Raycast(transform.position, Vector2.down, 0.5f + extraHeight, whatisPlatform)) return true;
-            if (Physics2D.Raycast(transform.position, Vector2.left, 0.5f + extraHeight, whatisPlatform)) return true;
-            if (Physics2D.Raycast(transform.position, Vector2.right, 0.5f + extraHeight, whatisPlatform)) return true;
+            return Physics2D.Raycast(transform.position, Vector2.down, 0.6f, whatisPlatform);
+        }
+
+        private bool IsWalled()
+        {
+            if (Physics2D.Raycast(transform.position, Vector2.right, wallCheckDistance, whatisPlatform)) return true;
+            if (Physics2D.Raycast(transform.position, Vector2.left, wallCheckDistance, whatisPlatform)) return true;
             return false;
         }
 
@@ -183,6 +196,23 @@ namespace JJG
                     Destroy(other.gameObject);
                 }
             }
+        }
+        // ▼▼▼ 더 많은 정보를 보여주도록 강화된 디버그 함수 ▼▼▼
+        private void LogCurrentAnimationState()
+        {
+            if (animator == null) return;
+
+            // 현재 애니메이션 클립 이름 가져오기
+            var clipInfo = animator.GetCurrentAnimatorClipInfo(0);
+            string currentClipName = "None"; // 클립이 없으면 None으로 표시
+            if (clipInfo.Length > 0)
+            {
+                currentClipName = clipInfo[0].clip.name;
+            }
+
+            // 중요한 변수들의 현재 상태를 하나의 줄에 모두 출력
+            // F2는 소수점 둘째 자리까지만 표시하라는 의미 (깔끔하게 보기 위함)
+            Debug.Log($"Anim: {currentClipName} | moveDir: {moveDir} | IsGrounded: {IsGrounded()} | isClimbing: {isClimbing} | rb.velocity.y: {rb.linearVelocity.y:F2}");
         }
     }
 }

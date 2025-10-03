@@ -1208,7 +1208,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 3.68
+  orthographic size: 5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1831,7 +1831,7 @@ GameObject:
   - component: {fileID: 1174604101}
   - component: {fileID: 1174604100}
   - component: {fileID: 1174604099}
-  m_Layer: 8
+  m_Layer: 5
   m_Name: Tilemap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -116429,16 +116429,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   moveSpeed: 3
-  jumpPower: 10
+  jumpPower: 5
   HitPoint:
   - {fileID: 211281824}
   - {fileID: 697335623}
   - {fileID: 1596349969}
   whatisPlatform:
     serializedVersion: 2
-    m_Bits: 256
-  wallCheckDistance: 0.5
-  climbingSpeed: 3
+    m_Bits: 288
 --- !u!61 &1851178546
 BoxCollider2D:
   m_ObjectHideFlags: 0
